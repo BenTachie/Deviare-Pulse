@@ -14,6 +14,16 @@ const stmtLog = db.prepare(`
   VALUES (@recipient, @template_key, @subject, @status, @message_id, @error)
 `)
 
+/** Escape characters that are unsafe inside HTML text nodes */
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 /** Strip HTML tags for the plain-text fallback */
 function htmlToText(html) {
   return html
@@ -99,7 +109,7 @@ async function sendBulkEmails({ recipients, templateKey, subject, bodyHtml, addi
     // Append optional CSM note as a postscript
     let body = bodyHtml
     if (additionalNote?.trim()) {
-      body = (body || '') + `<hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb;"><p style="font-size:13px;color:#6b7280;font-style:italic;">${additionalNote.trim()}</p>`
+      body = (body || '') + `<hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb;"><p style="font-size:13px;color:#6b7280;font-style:italic;">${escapeHtml(additionalNote.trim())}</p>`
     }
 
     try {

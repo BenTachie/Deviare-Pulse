@@ -1,14 +1,16 @@
-# ── Frontend ────────────────────────────────────
-deviare-pulse/node_modules/
-deviare-pulse/dist/
-deviare-pulse/.env
-deviare-pulse/.env.local
-deviare-pulse/.env.*.local
-
 # ── Backend ──────────────────────────────────────
-deviare-pulse-backend/node_modules/
-deviare-pulse-backend/data/
-deviare-pulse-backend/.env
+backend/node_modules/
+backend/data/
+backend/.env
+backend/.env.local
+
+# ── Frontend ────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
 
 # ── OS / editor ──────────────────────────────────
 .DS_Store

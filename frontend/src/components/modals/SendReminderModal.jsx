@@ -8,7 +8,7 @@ import {
   MILESTONE_LABELS,
   TEMPLATE_VARS,
 } from '../../data/reminderTemplates'
-import { sendReminder } from '../../services/emailApi'
+import { sendReminder, sendReminders } from '../../services/emailApi'
 import styles from './Modals.module.css'
 
 /**
@@ -70,8 +70,6 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
 
     try {
       if (isBulk) {
-        /* Import bulk sender lazily to keep single-send path lean */
-        const { sendReminders } = await import('../../services/emailApi')
         const recipients = preselectedLearners
           .filter((l) => l.email)
           .map((l) => {
@@ -83,8 +81,10 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
                 LearnerName:     l.name?.split(' ')[0] || l.name || '',
                 CourseName:      l.course || '',
                 MilestoneName:   milestoneLabel,
-                CurrentProgress: `${Math.round(l.oslProgress ?? 0)}%`,
-                RequiredTarget:  '85%',
+                CurrentProgress: templateKey === 'lvc'
+                  ? `${Math.round(l.lvcProgress ?? 0)}%`
+                  : `${Math.round(l.oslProgress ?? 0)}%`,
+                RequiredTarget:  templateKey === 'lvc' ? '80%' : '85%',
                 DueDate:         l.completionDate || 'your programme deadline',
                 DaysRemaining:   '7',
               },
@@ -112,8 +112,10 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
             LearnerName:     primaryLearner.name?.split(' ')[0] || primaryLearner.name || '',
             CourseName:      primaryLearner.course || '',
             MilestoneName:   milestoneLabel,
-            CurrentProgress: `${Math.round(primaryLearner.oslProgress ?? 0)}%`,
-            RequiredTarget:  '85%',
+            CurrentProgress: templateKey === 'lvc'
+              ? `${Math.round(primaryLearner.lvcProgress ?? 0)}%`
+              : `${Math.round(primaryLearner.oslProgress ?? 0)}%`,
+            RequiredTarget:  templateKey === 'lvc' ? '80%' : '85%',
             DueDate:         primaryLearner.completionDate || 'your programme deadline',
             DaysRemaining:   '7',
           },

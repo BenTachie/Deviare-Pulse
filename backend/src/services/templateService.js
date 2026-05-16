@@ -41,4 +41,4 @@ function buildEmail(templateKey, { subject, bodyHtml, variables = {} }) {
   return { subject: finalSubject, bodyHtml: finalBody }
 }
 
-module.exports = { listTemplates, getTemplateByKey, renderTemplate, buildEmail }
+module.exports = { listTemplates, getTemplateByKey, buildEmail }

@@ -67,8 +67,10 @@ function buildRecipientsForMilestone(learners, clients, programs, courses, audie
           LearnerName:     l.name?.split(' ')[0] || l.name || '',
           CourseName:      l.course || '',
           MilestoneName:   milestoneLabel,
-          CurrentProgress: `${Math.round(l.oslProgress ?? 0)}%`,
-          RequiredTarget:  '85%',
+          CurrentProgress: milestoneKey === 'lvc'
+            ? `${Math.round(l.lvcProgress ?? 0)}%`
+            : `${Math.round(l.oslProgress ?? 0)}%`,
+          RequiredTarget:  milestoneKey === 'lvc' ? '80%' : '85%',
           DueDate:         l.completionDate || 'your programme deadline',
           DaysRemaining:   '7',
         },
