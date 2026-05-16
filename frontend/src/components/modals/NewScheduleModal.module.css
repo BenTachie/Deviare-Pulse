@@ -135,6 +135,15 @@
   color: var(--text-muted);
 }
 
+.noDataBanner {
+  padding: 10px 14px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: #92400e;
+}
+
 /* ── Duration badge ──────────────────────────────────────────────── */
 .durationWrap { margin-top: -6px; }
 

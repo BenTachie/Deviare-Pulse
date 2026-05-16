@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import Modal from '../ui/Modal'
 import { useToast } from '../context/ToastContext'
-import { getMilestoneKey, substituteVars, MILESTONE_LABELS, TEMPLATE_VARS, LMS_URL } from '../../data/reminderTemplates'
+import { getMilestoneKey, getMilestoneDates, substituteVars, MILESTONE_LABELS, TEMPLATE_VARS, LMS_URL } from '../../data/reminderTemplates'
 import { sendReminder, sendReminders, fetchSgTemplates, fetchSgTemplateContent } from '../../services/emailApi'
+import { dbGet } from '../../utils/db'
 import styles from './Modals.module.css'
 
 const MILESTONE_ORDER = ['activation', 'osl', 'lvc', 'assessment', 'project', 'completion']
@@ -25,6 +26,7 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
   const primaryLearner = preselectedLearner ?? preselectedLearners?.[0] ?? null
 
   const [templates,     setTemplates]     = useState([])          // [{id, name, milestoneKey}]
+  const [schedules,     setSchedules]     = useState([])          // training schedules from IndexedDB
   const [templateKey,   setTemplateKey]   = useState(null)        // selected milestone key
   const [subject,       setSubject]       = useState('')
   const [loadingTpl,    setLoadingTpl]    = useState(true)
@@ -34,14 +36,18 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
 
   const msgRef = useRef(null)
 
-  /* ── Load template list from SendGrid on mount ── */
+  /* ── Load template list and training schedules in parallel on mount ── */
   useEffect(() => {
-    fetchSgTemplates()
-      .then((tpls) => {
+    Promise.all([
+      fetchSgTemplates(),
+      dbGet('deviare_pulse_schedules'),
+    ])
+      .then(([tpls, saved]) => {
         const sorted = [...tpls].sort((a, b) =>
           MILESTONE_ORDER.indexOf(a.milestoneKey) - MILESTONE_ORDER.indexOf(b.milestoneKey)
         )
         setTemplates(sorted)
+        setSchedules(Array.isArray(saved) ? saved : [])
         const defaultKey = primaryLearner
           ? getMilestoneKey(primaryLearner)
           : (sorted[0]?.milestoneKey ?? 'activation')
@@ -63,8 +69,9 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
     fetchSgTemplateContent(tpl.id)
       .then((content) => {
         const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
+        const dateOverrides  = getMilestoneDates(schedules, primaryLearner, templateKey)
         const subst = !isBulk && primaryLearner
-          ? (str) => substituteVars(str, primaryLearner, milestoneLabel)
+          ? (str) => substituteVars(str, primaryLearner, milestoneLabel, dateOverrides)
           : (str) => str
 
         setSubject(subst(content.subject))
@@ -84,8 +91,9 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
     fetchSgTemplateContent(tpl.id)
       .then((content) => {
         const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
+        const dateOverrides  = getMilestoneDates(schedules, primaryLearner, templateKey)
         const subst = !isBulk && primaryLearner
-          ? (str) => substituteVars(str, primaryLearner, milestoneLabel)
+          ? (str) => substituteVars(str, primaryLearner, milestoneLabel, dateOverrides)
           : (str) => str
         setSubject(subst(content.subject))
         if (msgRef.current) msgRef.current.innerHTML = subst(stripHandlebarsBlocks(content.htmlContent))
@@ -107,21 +115,25 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
         const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
         const recipients = preselectedLearners
           .filter((l) => l.email)
-          .map((l) => ({
-            email: l.email,
-            name:  l.name,
-            variables: {
-              LearnerName:     l.name?.split(' ')[0] || l.name || '',
-              CourseName:      l.course || '',
-              MilestoneName:   milestoneLabel,
-              CurrentProgress: templateKey === 'lvc'
-                ? `${Math.round(l.lvcProgress ?? 0)}%`
-                : `${Math.round(l.oslProgress ?? 0)}%`,
-              RequiredTarget:  templateKey === 'lvc' ? '80%' : '85%',
-              DueDate:         l.completionDate || 'your programme deadline',
-              DaysRemaining:   '7',
-            },
-          }))
+          .map((l) => {
+            const { dueDate, daysRemaining } = getMilestoneDates(schedules, l, templateKey)
+            return {
+              email: l.email,
+              name:  l.name,
+              variables: {
+                LearnerName:     l.name?.split(' ')[0] || l.name || '',
+                CourseName:      l.course || '',
+                MilestoneName:   milestoneLabel,
+                CurrentProgress: templateKey === 'lvc'
+                  ? `${Math.round(l.lvcProgress ?? 0)}%`
+                  : `${Math.round(l.oslProgress ?? 0)}%`,
+                RequiredTarget:  templateKey === 'lvc' ? '80%' : '85%',
+                DueDate:         dueDate,
+                DaysRemaining:   daysRemaining,
+                LMSLoginUrl:     LMS_URL,
+              },
+            }
+          })
 
         const result = await sendReminders({ recipients, templateKey, subject, bodyHtml })
         setSent(true)
@@ -134,6 +146,7 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
       } else {
         if (!primaryLearner?.email) throw new Error('Learner has no email address on record')
         const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
+        const { dueDate, daysRemaining } = getMilestoneDates(schedules, primaryLearner, templateKey)
         await sendReminder({
           recipientEmail: primaryLearner.email,
           recipientName:  primaryLearner.name,
@@ -148,8 +161,8 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
               ? `${Math.round(primaryLearner.lvcProgress ?? 0)}%`
               : `${Math.round(primaryLearner.oslProgress ?? 0)}%`,
             RequiredTarget:  templateKey === 'lvc' ? '80%' : '85%',
-            DueDate:         primaryLearner.completionDate || 'your programme deadline',
-            DaysRemaining:   '7',
+            DueDate:         dueDate,
+            DaysRemaining:   daysRemaining,
             LMSLoginUrl:     LMS_URL,
           },
         })

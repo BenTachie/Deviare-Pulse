@@ -119,8 +119,41 @@ export function getMilestoneKey(learner) {
 
 export const LMS_URL = 'https://platform.deviare.africa'
 
-/** Replace {{placeholders}} with real learner data */
-export function substituteVars(str, learner, milestoneLabel = '') {
+/**
+ * Resolve a learner's milestone deadline from the loaded schedule list.
+ * Matches learner.cohort → schedule.cohort → milestone.key.
+ * Returns formatted dueDate string and daysRemaining count.
+ */
+export function getMilestoneDates(schedules, learner, milestoneKey) {
+  const schedule  = Array.isArray(schedules)
+    ? schedules.find((s) => s.cohort && s.cohort === learner?.cohort)
+    : null
+  const milestone = schedule?.milestones?.find((m) => m.key === milestoneKey)
+
+  if (!milestone?.dueDate) {
+    return {
+      dueDate:       learner?.completionDate || 'your programme deadline',
+      daysRemaining: '7',
+    }
+  }
+
+  const due   = new Date(milestone.dueDate)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  due.setHours(0, 0, 0, 0)
+  const diff = Math.ceil((due - today) / (1000 * 60 * 60 * 24))
+
+  return {
+    dueDate:       due.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    daysRemaining: diff > 0 ? String(diff) : '0',
+  }
+}
+
+/**
+ * Replace {{placeholders}} with real learner data.
+ * Pass overrides.dueDate / overrides.daysRemaining to inject schedule-sourced dates.
+ */
+export function substituteVars(str, learner, milestoneLabel = '', overrides = {}) {
   const firstName = learner.name?.split(' ')[0] || learner.name || ''
   const map = {
     '{{LearnerName}}':     firstName,
@@ -128,8 +161,8 @@ export function substituteVars(str, learner, milestoneLabel = '') {
     '{{MilestoneName}}':   milestoneLabel,
     '{{CurrentProgress}}': `${Math.round(learner.oslProgress ?? 0)}%`,
     '{{RequiredTarget}}':  '85%',
-    '{{DueDate}}':         learner.completionDate || 'your programme deadline',
-    '{{DaysRemaining}}':   '7',
+    '{{DueDate}}':         overrides.dueDate     ?? (learner?.completionDate || 'your programme deadline'),
+    '{{DaysRemaining}}':   overrides.daysRemaining ?? '7',
     '{{LMSLoginUrl}}':     LMS_URL,
   }
   let result = str

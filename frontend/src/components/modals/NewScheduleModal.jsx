@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Modal from '../ui/Modal'
-import { AVAILABLE_PROJECTS, AVAILABLE_COURSES } from '../../data/schedules'
+import { MultiSelectDropdown } from '../ui/MultiSelectDropdown'
+import { useApp } from '../../context/AppContext'
 import styles from './NewScheduleModal.module.css'
 
 /* ── Milestone template presets ─────────────────────────────────── */
@@ -33,57 +34,73 @@ function calcDuration(start, end) {
 
 /* ── Component ──────────────────────────────────────────────────── */
 export default function NewScheduleModal({ onClose, onCreate }) {
-  const [client, setClient]               = useState('')
-  const [project, setProject]             = useState('')
-  const [newProjectName, setNewProjectName] = useState('')
-  const [courses, setCourses]             = useState([])
-  const [courseSearch, setCourseSearch]   = useState('')
-  const [dropdownOpen, setDropdownOpen]   = useState(false)
-  const [startDate, setStartDate]         = useState('')
-  const [endDate, setEndDate]             = useState('')
-  const [template, setTemplate]           = useState('custom')
+  const { learners } = useApp()
 
-  const searchRef = useRef(null)
-  const dropRef   = useRef(null)
+  const [selectedClients,  setSelectedClients]  = useState([])
+  const [selectedProjects, setSelectedProjects] = useState([])
+  const [selectedCourses,  setSelectedCourses]  = useState([])
+  const [startDate,        setStartDate]        = useState('')
+  const [endDate,          setEndDate]          = useState('')
+  const [template,         setTemplate]         = useState('custom')
+  const [validationError,  setValidationError]  = useState('')
 
   const duration = calcDuration(startDate, endDate)
 
-  const filteredCourses = AVAILABLE_COURSES.filter(
-    (c) =>
-      !courses.includes(c) &&
-      c.toLowerCase().includes(courseSearch.toLowerCase())
+  /* ── Cascade option lists derived from uploaded learner data ── */
+  const allClients = useMemo(
+    () => [...new Set(learners.map((l) => l.clientName).filter(Boolean))].sort(),
+    [learners]
   )
 
-  const addCourse = (course) => {
-    setCourses((prev) => (prev.includes(course) ? prev : [...prev, course]))
-    setCourseSearch('')
-    setDropdownOpen(false)
-    searchRef.current?.focus()
-  }
+  const availableProjects = useMemo(() => {
+    const pool = selectedClients.length
+      ? learners.filter((l) => selectedClients.includes(l.clientName))
+      : learners
+    return [...new Set(pool.map((l) => l.projectName).filter(Boolean))].sort()
+  }, [learners, selectedClients])
 
-  const removeCourse = (course) =>
-    setCourses((prev) => prev.filter((c) => c !== course))
+  const availableCourses = useMemo(() => {
+    let pool = selectedClients.length
+      ? learners.filter((l) => selectedClients.includes(l.clientName))
+      : learners
+    if (selectedProjects.length)
+      pool = pool.filter((l) => selectedProjects.includes(l.projectName))
+    return [...new Set(pool.map((l) => l.course).filter(Boolean))].sort()
+  }, [learners, selectedClients, selectedProjects])
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handler = (e) => {
-      if (dropRef.current && !dropRef.current.contains(e.target))
-        setDropdownOpen(false)
+  /* ── Cascade reset handlers ── */
+  const handleClientsChange = useCallback((vals) => {
+    setSelectedClients(vals)
+    if (vals.length > 0) {
+      const pool            = learners.filter((l) => vals.includes(l.clientName))
+      const reachableProj   = new Set(pool.map((l) => l.projectName))
+      const reachableCourse = new Set(pool.map((l) => l.course))
+      setSelectedProjects((prev) => prev.filter((p) => reachableProj.has(p)))
+      setSelectedCourses((prev)  => prev.filter((c) => reachableCourse.has(c)))
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
+  }, [learners])
 
-  const [validationError, setValidationError] = useState('')
+  const handleProjectsChange = useCallback((vals) => {
+    setSelectedProjects(vals)
+    if (vals.length > 0) {
+      const clientPool = selectedClients.length
+        ? learners.filter((l) => selectedClients.includes(l.clientName))
+        : learners
+      const reachable = new Set(
+        clientPool.filter((l) => vals.includes(l.projectName)).map((l) => l.course)
+      )
+      setSelectedCourses((prev) => prev.filter((c) => reachable.has(c)))
+    }
+  }, [learners, selectedClients])
 
+  /* ── Build & emit schedule ── */
   const handleCreate = useCallback(() => {
-    const trimmedClient = client.trim()
-    if (!trimmedClient) {
-      setValidationError('Please enter a client name.')
+    if (selectedClients.length === 0) {
+      setValidationError('Please select a client.')
       return
     }
-    if (courses.length === 0) {
-      setValidationError('Please add at least one course.')
+    if (selectedCourses.length === 0) {
+      setValidationError('Please select at least one course.')
       return
     }
     if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
@@ -92,26 +109,33 @@ export default function NewScheduleModal({ onClose, onCreate }) {
     }
     setValidationError('')
 
-    const projectName =
-      project === '__new__' ? newProjectName.trim() : project
+    const clientName  = selectedClients.join(', ')
+    const projectName = selectedProjects.join(', ')
+
+    // Derive cohort from the first learner matching the selection
+    const cohortLearner = learners.find((l) =>
+      selectedClients.includes(l.clientName) &&
+      (selectedProjects.length === 0 || selectedProjects.includes(l.projectName))
+    )
+    const cohort = cohortLearner?.cohort || selectedClients[0]
 
     const tpl = TEMPLATES[template]
 
     const buildMilestones = () => {
       if (!tpl.offsets || !startDate) return []
       return Object.entries(tpl.offsets).map(([key, offset]) => {
-        const due = addDays(startDate, offset)
+        const due  = addDays(startDate, offset)
         const base = {
           key,
-          dueDate: due,
+          dueDate:     due,
           windowStart: 7,
-          frequency: 'Every 2 days',
+          frequency:   'Every 2 days',
           postDeadline: 'No post-deadline reminders',
         }
         if (key === 'osl') {
           base.thresholds = [
-            { pct: 50, dueDate: due, windowStart: 7,  frequency: 'Every 2 days', postDeadline: '3 reminders after deadline' },
-            { pct: 85, dueDate: due, windowStart: 7,  frequency: 'Every 2 days', postDeadline: '5 reminders after deadline' },
+            { pct: 50, dueDate: due, windowStart: 7, frequency: 'Every 2 days', postDeadline: '3 reminders after deadline' },
+            { pct: 85, dueDate: due, windowStart: 7, frequency: 'Every 2 days', postDeadline: '5 reminders after deadline' },
           ]
         }
         if (key === 'lvc') {
@@ -125,26 +149,28 @@ export default function NewScheduleModal({ onClose, onCreate }) {
     }
 
     const newSchedule = {
-      id: `s${Date.now()}`,
-      name: trimmedClient + (projectName ? ` · ${projectName}` : ''),
-      client: trimmedClient,
-      project: projectName,
-      cohort: trimmedClient,
-      courses: courses.length > 0 ? [...courses] : [trimmedClient],
-      status: 'Draft',
-      startDate: startDate || new Date().toISOString().split('T')[0],
+      id:               `s${Date.now()}`,
+      name:             clientName + (projectName ? ` · ${projectName}` : ''),
+      client:           clientName,
+      project:          projectName,
+      cohort,
+      courses:          [...selectedCourses],
+      status:           'Draft',
+      startDate:        startDate || new Date().toISOString().split('T')[0],
       endDate,
-      learnersCount: 0,
-      overallProgress: 0,
+      learnersCount:    0,
+      overallProgress:  0,
       currentMilestone: { label: 'Activation', variant: 'info' },
-      milestones: buildMilestones(),
+      milestones:       buildMilestones(),
     }
 
     onCreate(newSchedule)
     onClose()
-  }, [client, project, newProjectName, courses, startDate, endDate, template, onCreate, onClose])
+  }, [selectedClients, selectedProjects, selectedCourses, startDate, endDate, template, learners, onCreate, onClose])
 
-  const isValid = client.trim().length > 0
+  const isValid = selectedClients.length > 0
+
+  const noData = learners.length === 0
 
   return (
     <Modal
@@ -170,102 +196,43 @@ export default function NewScheduleModal({ onClose, onCreate }) {
     >
       <div className={styles.form}>
 
+        {noData && (
+          <div className={styles.noDataBanner}>
+            No learner data imported yet — upload a spreadsheet on the Upload Data page to populate these lists.
+          </div>
+        )}
+
         {/* ── Row 1: Client + Project ── */}
         <div className={styles.formRow}>
           <div className={styles.field}>
             <label className={styles.label}>Client</label>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="e.g. Vodacom, Standard Bank…"
-              value={client}
-              onChange={(e) => setClient(e.target.value)}
-              autoFocus
+            <MultiSelectDropdown
+              options={allClients}
+              selected={selectedClients}
+              onChange={handleClientsChange}
             />
           </div>
 
           <div className={styles.field}>
             <label className={styles.label}>Project</label>
-            <select
-              className={styles.input}
-              value={project}
-              onChange={(e) => setProject(e.target.value)}
-            >
-              <option value="">— Select project —</option>
-              {AVAILABLE_PROJECTS.map((p) => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-              <option value="__new__">+ Create new project…</option>
-            </select>
-            {project === '__new__' && (
-              <input
-                className={styles.input}
-                style={{ marginTop: 6 }}
-                type="text"
-                placeholder="New project name…"
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-              />
-            )}
+            <MultiSelectDropdown
+              options={availableProjects}
+              selected={selectedProjects}
+              onChange={handleProjectsChange}
+            />
           </div>
         </div>
 
-        {/* ── Courses tag-search ── */}
+        {/* ── Courses ── */}
         <div className={styles.field}>
           <label className={styles.label}>Courses</label>
-          <div
-            className={styles.tagWrap}
-            ref={dropRef}
-            onClick={() => { setDropdownOpen(true); searchRef.current?.focus() }}
-          >
-            {courses.map((c) => (
-              <span key={c} className={styles.tag}>
-                {c}
-                <button
-                  className={styles.tagRemove}
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); removeCourse(c) }}
-                >×</button>
-              </span>
-            ))}
-            <input
-              ref={searchRef}
-              className={styles.tagInput}
-              type="text"
-              placeholder={courses.length === 0 ? 'Search or add a course…' : ''}
-              value={courseSearch}
-              onChange={(e) => { setCourseSearch(e.target.value); setDropdownOpen(true) }}
-              onFocus={() => setDropdownOpen(true)}
-            />
-
-            {dropdownOpen && (
-              <div className={styles.dropdown}>
-                {filteredCourses.map((c) => (
-                  <div
-                    key={c}
-                    className={styles.dropdownItem}
-                    onMouseDown={(e) => { e.preventDefault(); addCourse(c) }}
-                  >
-                    {c}
-                  </div>
-                ))}
-                {courseSearch.trim() &&
-                  !AVAILABLE_COURSES.map((x) => x.toLowerCase()).includes(courseSearch.trim().toLowerCase()) && (
-                  <div
-                    className={styles.dropdownItemNew}
-                    onMouseDown={(e) => { e.preventDefault(); addCourse(courseSearch.trim()) }}
-                  >
-                    + Add "{courseSearch.trim()}"
-                  </div>
-                )}
-                {filteredCourses.length === 0 && !courseSearch.trim() && (
-                  <div className={styles.dropdownEmpty}>All available courses selected</div>
-                )}
-              </div>
-            )}
-          </div>
+          <MultiSelectDropdown
+            options={availableCourses}
+            selected={selectedCourses}
+            onChange={setSelectedCourses}
+          />
           <div className={styles.hint}>
-            Select one or multiple courses. Type to search or add a new one.
+            Select one or more courses. Narrow options by choosing a client or project first.
           </div>
         </div>
 
