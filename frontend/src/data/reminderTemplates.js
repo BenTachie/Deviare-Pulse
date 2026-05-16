@@ -125,9 +125,26 @@ export const LMS_URL = 'https://platform.deviare.africa'
  * Returns formatted dueDate string and daysRemaining count.
  */
 export function getMilestoneDates(schedules, learner, milestoneKey) {
-  const schedule  = Array.isArray(schedules)
-    ? schedules.find((s) => s.cohort && s.cohort === learner?.cohort)
-    : null
+  let schedule = null
+
+  if (Array.isArray(schedules) && learner) {
+    // 1. Exact cohort match — new schedules store the raw cohort from the dataset
+    schedule = schedules.find((s) => s.cohort && s.cohort === learner.cohort)
+
+    // 2. Client + course match — older schedules stored client name as cohort
+    if (!schedule && learner.clientName) {
+      schedule = schedules.find((s) =>
+        s.client === learner.clientName &&
+        (!s.courses?.length || s.courses.some((c) => c === learner.course))
+      )
+    }
+
+    // 3. Client-only fallback
+    if (!schedule && learner.clientName) {
+      schedule = schedules.find((s) => s.client === learner.clientName)
+    }
+  }
+
   const milestone = schedule?.milestones?.find((m) => m.key === milestoneKey)
 
   if (!milestone?.dueDate) {

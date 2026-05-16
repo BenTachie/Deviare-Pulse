@@ -318,7 +318,7 @@ function TimelinePreview({ milestones }) {
 }
 
 /* ── MilestoneBuilder ────────────────────────────────────────────── */
-export default function MilestoneBuilder({ schedule, onMilestonesChange }) {
+export default function MilestoneBuilder({ schedule, onMilestonesChange, onStatusChange }) {
   const courses = useMemo(
     () => schedule.courses?.length ? schedule.courses : [schedule.cohort || 'Default'],
     [schedule]
@@ -352,11 +352,7 @@ export default function MilestoneBuilder({ schedule, onMilestonesChange }) {
     setActiveCourse(courses[0])
   }, [schedule.id, courses])
 
-  const statusVariants = {
-    Active: styles.statusActive,
-    Draft:  styles.statusDraft,
-    Ended:  styles.statusEnded,
-  }
+  const isActive = schedule.status === 'Active'
 
   return (
     <div>
@@ -369,9 +365,14 @@ export default function MilestoneBuilder({ schedule, onMilestonesChange }) {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span className={`${styles.statusBadge} ${statusVariants[schedule.status] || styles.statusDraft}`}>
-            {schedule.status}
-          </span>
+          <button
+            className={`${styles.statusBadge} ${isActive ? styles.statusActive : styles.statusDraft} ${styles.statusToggleBtn}`}
+            onClick={() => onStatusChange?.(isActive ? 'Draft' : 'Active')}
+            title={isActive ? 'Click to deactivate' : 'Click to activate'}
+          >
+            <span className={styles.statusDot} style={{ background: isActive ? '#16a34a' : '#9ca3af' }} />
+            {schedule.status ?? 'Draft'}
+          </button>
           <div className={styles.builderDateRow}>
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Start date:</span>
             <input

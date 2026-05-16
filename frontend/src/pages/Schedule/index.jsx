@@ -155,18 +155,39 @@ export default function SchedulePage() {
     if (!selectedId) return
     const dirty = pendingMilestones[selectedId]
     const today = new Date().toISOString().split('T')[0]
-    const entry = makeLogEntry('info', 'Schedule configuration saved', 'Milestone windows and reminder settings updated manually')
+    const entry = makeLogEntry('success', 'Schedule activated', 'Milestone windows saved — automated reminders are now live')
     setSchedules((prev) => {
       const next = prev.map((s) => {
         if (s.id !== selectedId) return s
-        const updated = { ...s, ...(dirty ? { milestones: dirty } : {}), updatedAt: today }
+        const updated = { ...s, ...(dirty ? { milestones: dirty } : {}), status: 'Active', updatedAt: today }
         return prependLog(updated, entry)
       })
       persist(next)
       return next
     })
-    showToast('Schedule saved.', 'success')
+    showToast('Schedule saved and activated.', 'success')
   }, [selectedId, pendingMilestones, persist, showToast])
+
+  const handleStatusToggle = useCallback((newStatus) => {
+    if (!selectedId) return
+    const today = new Date().toISOString().split('T')[0]
+    const entry = makeLogEntry(
+      newStatus === 'Active' ? 'success' : 'info',
+      newStatus === 'Active' ? 'Schedule activated' : 'Schedule deactivated',
+      newStatus === 'Active'
+        ? 'Automated reminders are now live for this cohort'
+        : 'Automation paused — no reminders will be dispatched'
+    )
+    setSchedules((prev) => {
+      const next = prev.map((s) => {
+        if (s.id !== selectedId) return s
+        return prependLog({ ...s, status: newStatus, updatedAt: today }, entry)
+      })
+      persist(next)
+      return next
+    })
+    showToast(newStatus === 'Active' ? 'Schedule activated.' : 'Schedule deactivated.', 'success')
+  }, [selectedId, persist, showToast])
 
   const handleDelete = useCallback((id, e) => {
     e.stopPropagation()
@@ -283,6 +304,7 @@ export default function SchedulePage() {
                 <MilestoneBuilder
                   schedule={selectedSchedule}
                   onMilestonesChange={handleMilestonesChange}
+                  onStatusChange={handleStatusToggle}
                 />
               )}
               {activeTab === 'calendar' && effectiveSchedule && (
