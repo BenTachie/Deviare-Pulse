@@ -166,12 +166,17 @@ async function sendBulkEmails({ recipients, templateKey, subject, bodyHtml, addi
   for (const r of recipients) {
     try {
       // ── Resolve dates for this recipient from the backend schedule store ──
+      // Parse numeric progress for OSL/LVC threshold resolution (e.g. "67%" → 67)
+      const rawProgress     = r.variables?.CurrentProgress
+      const currentProgress = rawProgress != null ? parseFloat(String(rawProgress)) : null
+
       const resolved = resolveReminderContext({
         clientName:  r.clientName,
         projectName: r.projectName,
         courseName:  r.courseName,
         cohort:      r.cohort,
         milestoneKey: templateKey,
+        currentProgress,
       })
 
       if (!resolved._scheduleFound) {

@@ -62,8 +62,12 @@ async function sendReminder(req, res) {
 
   const milestoneKey = milestoneKeyField || templateKey || 'activation'
 
+  // Parse numeric progress for OSL/LVC threshold resolution (e.g. "67%" → 67)
+  const rawProgress   = variables?.CurrentProgress
+  const currentProgress = rawProgress != null ? parseFloat(String(rawProgress)) : null
+
   // Resolve schedule → milestone → dates on the backend
-  const resolved = resolveReminderContext({ clientName, projectName, courseName, cohort, milestoneKey })
+  const resolved = resolveReminderContext({ clientName, projectName, courseName, cohort, milestoneKey, currentProgress })
 
   if (!resolved._scheduleFound) {
     console.warn(`[sendReminder] No matching schedule for ${recipientEmail} (client=${clientName}, course=${courseName}, cohort=${cohort})`)

@@ -164,6 +164,32 @@ export function getMilestoneDates(schedules, learner, milestoneKey) {
     }
   }
 
+  // For threshold-based milestones (OSL/LVC), find the learner's next unmet threshold
+  // and use its due date rather than the flat milestone.dueDate
+  if ((milestoneKey === 'osl' || milestoneKey === 'lvc') && milestone?.thresholds?.length > 0) {
+    const currentPct = milestoneKey === 'lvc'
+      ? (learner?.lvcProgress ?? 0)
+      : (learner?.oslProgress ?? 0)
+
+    const sorted = [...milestone.thresholds].sort((a, b) => a.pct - b.pct)
+    // Next unmet threshold — first one whose pct the learner hasn't yet reached
+    const next = sorted.find((t) => t.pct > currentPct) ?? sorted[sorted.length - 1]
+
+    if (next?.dueDate) {
+      const result = diffFromISO(next.dueDate)
+      if (result) {
+        return {
+          dueDate:        result.dueDateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          dueDateISO:     next.dueDate,
+          daysRemaining:  String(result.diff),
+          requiredTarget: `${next.pct}%`,
+        }
+      }
+    }
+  }
+
+  // For non-threshold milestones (or OSL/LVC with no thresholds configured),
+  // fall back to the flat milestone due date
   if (milestone?.dueDate) {
     const result = diffFromISO(milestone.dueDate)
     if (result) {

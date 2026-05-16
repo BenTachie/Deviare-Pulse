@@ -68,10 +68,12 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
 
     fetchSgTemplateContent(tpl.id)
       .then((content) => {
-        const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
-        const dateOverrides  = {
-          ...getMilestoneDates(schedules, primaryLearner, templateKey),
-          requiredTarget:  templateKey === 'lvc' ? '80%' : '85%',
+        const milestoneLabel  = MILESTONE_LABELS[templateKey] ?? ''
+        const milestoneInfo   = getMilestoneDates(schedules, primaryLearner, templateKey)
+        const dateOverrides   = {
+          ...milestoneInfo,
+          // Only use the hardcoded fallback if getMilestoneDates didn't resolve a threshold target
+          requiredTarget:  milestoneInfo.requiredTarget ?? (templateKey === 'lvc' ? '80%' : '85%'),
           currentProgress: templateKey === 'lvc'
             ? `${Math.round(primaryLearner?.lvcProgress ?? 0)}%`
             : `${Math.round(primaryLearner?.oslProgress ?? 0)}%`,
@@ -96,10 +98,11 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
     setLoadingTpl(true)
     fetchSgTemplateContent(tpl.id)
       .then((content) => {
-        const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
-        const dateOverrides  = {
-          ...getMilestoneDates(schedules, primaryLearner, templateKey),
-          requiredTarget:  templateKey === 'lvc' ? '80%' : '85%',
+        const milestoneLabel  = MILESTONE_LABELS[templateKey] ?? ''
+        const milestoneInfo   = getMilestoneDates(schedules, primaryLearner, templateKey)
+        const dateOverrides   = {
+          ...milestoneInfo,
+          requiredTarget:  milestoneInfo.requiredTarget ?? (templateKey === 'lvc' ? '80%' : '85%'),
           currentProgress: templateKey === 'lvc'
             ? `${Math.round(primaryLearner?.lvcProgress ?? 0)}%`
             : `${Math.round(primaryLearner?.oslProgress ?? 0)}%`,
