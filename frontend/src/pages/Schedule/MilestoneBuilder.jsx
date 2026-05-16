@@ -238,12 +238,13 @@ function TimelinePreview({ milestones }) {
   const rows = useMemo(() => {
     const result = []
     milestones.forEach((ms) => {
-      if (!ms.enabled || !ms.dueDate) return
+      if (!ms.enabled) return
       const mt = MILESTONE_TYPES.find((t) => t.key === ms.key)
       const isThreshold = ms.key === 'osl' || ms.key === 'lvc'
 
       if (isThreshold && ms.thresholds?.length) {
         ms.thresholds.forEach((th) => {
+          if (!th.dueDate) return
           result.push({
             key: ms.key,
             label: `${mt?.label} (${th.pct}%)`,
@@ -255,6 +256,7 @@ function TimelinePreview({ milestones }) {
           })
         })
       } else {
+        if (!ms.dueDate) return
         result.push({
           key: ms.key,
           label: mt?.label ?? ms.key,
@@ -363,7 +365,7 @@ export default function MilestoneBuilder({ schedule, onMilestonesChange }) {
         <div>
           <div className={styles.builderTitle}>{schedule.name}</div>
           <div className={styles.builderSub}>
-            {schedule.client ? `${schedule.client} · ${schedule.cohort}` : schedule.cohort}
+            {[schedule.client, schedule.courses?.join(', ')].filter(Boolean).join(' · ')}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

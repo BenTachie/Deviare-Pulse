@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import SegmentedTabs from '../../components/ui/SegmentedTabs'
 import Button from '../../components/ui/Button'
 import ScheduleCard from './ScheduleCard'
@@ -100,7 +100,6 @@ export default function SchedulePage() {
   const [selectedId, setSelectedId]           = useState(null)
   const [activeTab, setActiveTab]             = useState('builder')
   const [showNewModal, setShowNewModal]       = useState(false)
-  const [showAssignModal, setShowAssignModal] = useState(false)
   const [pendingMilestones, setPendingMilestones] = useState({})
 
   // Load persisted schedules from IndexedDB on mount; seed demo on first visit
@@ -130,6 +129,14 @@ export default function SchedulePage() {
   }, [])
 
   const selectedSchedule = schedules.find((s) => s.id === selectedId)
+
+  // Merge pending builder edits so CalendarView reflects them before Save is clicked
+  const effectiveSchedule = useMemo(() => {
+    if (!selectedSchedule) return null
+    const dirty = pendingMilestones[selectedId]
+    if (!dirty) return selectedSchedule
+    return { ...selectedSchedule, milestones: dirty }
+  }, [selectedSchedule, selectedId, pendingMilestones])
 
   const handleCreate = useCallback((newSchedule) => {
     const entry = makeLogEntry('success', 'Schedule created', `"${newSchedule.name}" configured and saved`)
@@ -170,20 +177,6 @@ export default function SchedulePage() {
     })
     if (selectedId === id) setSelectedId(null)
     showToast('Schedule and linked automation removed.', 'info')
-  }, [selectedId, persist, showToast])
-
-  const handleAssign = useCallback((cohort) => {
-    const entry = makeLogEntry('success', 'Cohort assigned', `Cohort "${cohort}" linked to this schedule`)
-    setSchedules((prev) => {
-      const next = prev.map((s) => {
-        if (s.id !== selectedId) return s
-        return prependLog({ ...s, cohort }, entry)
-      })
-      persist(next)
-      return next
-    })
-    setShowAssignModal(false)
-    showToast(`Cohort "${cohort}" assigned.`, 'success')
   }, [selectedId, persist, showToast])
 
   const handleMilestonesChange = useCallback((courseKey, milestones) => {
@@ -283,10 +276,7 @@ export default function SchedulePage() {
             <div>
               <div className={styles.detailControls}>
                 <SegmentedTabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <Button variant="secondary" size="sm" onClick={() => setShowAssignModal(true)}>Assign Cohort</Button>
-                  <Button variant="primary"   size="sm" onClick={handleSave}>Save Schedule</Button>
-                </div>
+                <Button variant="primary" size="sm" onClick={handleSave}>Save Schedule</Button>
               </div>
 
               {activeTab === 'builder'  && (
@@ -295,9 +285,9 @@ export default function SchedulePage() {
                   onMilestonesChange={handleMilestonesChange}
                 />
               )}
-              {activeTab === 'calendar' && (
+              {activeTab === 'calendar' && effectiveSchedule && (
                 <CalendarView
-                  schedule={selectedSchedule}
+                  schedule={effectiveSchedule}
                   onMilestoneUpdate={handleCalendarUpdate}
                 />
               )}
@@ -314,13 +304,6 @@ export default function SchedulePage() {
         />
       )}
 
-      {showAssignModal && selectedSchedule && (
-        <AssignCohortModal
-          schedule={selectedSchedule}
-          onClose={() => setShowAssignModal(false)}
-          onAssign={handleAssign}
-        />
-      )}
     </div>
   )
 }

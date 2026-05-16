@@ -150,7 +150,7 @@ export default function NewScheduleModal({ onClose, onCreate }) {
 
     const newSchedule = {
       id:               `s${Date.now()}`,
-      name:             clientName + (projectName ? ` · ${projectName}` : ''),
+      name:             cohort || projectName || clientName,
       client:           clientName,
       project:          projectName,
       cohort,

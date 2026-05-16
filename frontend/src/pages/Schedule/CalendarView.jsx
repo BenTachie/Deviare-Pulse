@@ -290,10 +290,10 @@ export default function CalendarView({ schedule, onMilestoneUpdate }) {
             <span className={styles.calContextValue}>{schedule.client}</span>
           </div>
         )}
-        {(schedule.project || schedule.name) && (
+        {(schedule.cohort || schedule.project) && (
           <div className={styles.calContextItem}>
             <span className={styles.calContextLabel}>Programme</span>
-            <span className={styles.calContextValue}>{schedule.project ?? schedule.name}</span>
+            <span className={styles.calContextValue}>{schedule.cohort ?? schedule.project}</span>
           </div>
         )}
         {schedule.courses?.length > 0 && (
