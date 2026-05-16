@@ -1,11 +1,10 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Modal from '../ui/Modal'
 import { useToast } from '../context/ToastContext'
 import { useApp } from '../../context/AppContext'
 import { MultiSelectDropdown } from '../ui/MultiSelectDropdown'
 import { sendReminders } from '../../services/emailApi'
-import { MILESTONE_LABELS, getMilestoneDates, LMS_URL } from '../../data/reminderTemplates'
-import { dbGet } from '../../utils/db'
+import { MILESTONE_LABELS } from '../../data/reminderTemplates'
 import styles from './Modals.module.css'
 
 const MILESTONE_OPTIONS = [
@@ -46,48 +45,41 @@ function calcRecipients(learners, clients, programs, courses, audience) {
 }
 
 /* ── Build recipients payload for a given milestone ─────────────── */
-function buildRecipientsForMilestone(learners, clients, programs, courses, audience, milestoneKey, schedules) {
+function buildRecipientsForMilestone(learners, clients, programs, courses, audience, milestoneKey) {
   let pool = learners
   if (clients.length)  pool = pool.filter((l) => clients.includes(l.clientName))
   if (programs.length) pool = pool.filter((l) => programs.includes(l.projectName))
   if (courses.length)  pool = pool.filter((l) => courses.includes(l.course))
 
+  const milestoneLabel = MILESTONE_LABELS[milestoneKey] ?? ''
+
   return pool
     .filter((l) => l.email && matchesAudience(l, audience))
-    .map((l) => {
-      const milestoneLabel              = MILESTONE_LABELS[milestoneKey] ?? ''
-      const { dueDate, daysRemaining }  = getMilestoneDates(schedules, l, milestoneKey)
-      return {
-        email: l.email,
-        name:  l.name,
-        variables: {
-          LearnerName:     l.name?.split(' ')[0] || l.name || '',
-          CourseName:      l.course || '',
-          MilestoneName:   milestoneLabel,
-          CurrentProgress: milestoneKey === 'lvc'
-            ? `${Math.round(l.lvcProgress ?? 0)}%`
-            : `${Math.round(l.oslProgress ?? 0)}%`,
-          RequiredTarget:  milestoneKey === 'lvc' ? '80%' : '85%',
-          DueDate:         dueDate,
-          DaysRemaining:   daysRemaining,
-          LMSLoginUrl:     LMS_URL,
-        },
-      }
-    })
+    .map((l) => ({
+      email:       l.email,
+      name:        l.name,
+      // Learner context — backend resolver uses these to find the matching schedule
+      clientName:  l.clientName  || '',
+      projectName: l.projectName || '',
+      courseName:  l.course      || '',
+      cohort:      l.cohort      || '',
+      variables: {
+        LearnerName:     l.name?.split(' ')[0] || l.name || '',
+        CourseName:      l.course || '',
+        MilestoneName:   milestoneLabel,
+        CurrentProgress: milestoneKey === 'lvc'
+          ? `${Math.round(l.lvcProgress ?? 0)}%`
+          : `${Math.round(l.oslProgress ?? 0)}%`,
+        RequiredTarget:  milestoneKey === 'lvc' ? '80%' : '85%',
+        // DueDate / DaysRemaining omitted — backend resolver fills these from the schedule DB
+      },
+    }))
 }
 
 /* ── Component ───────────────────────────────────────────────────── */
 export default function SendRemindersModal({ onClose }) {
   const { showToast } = useToast()
   const { learners }  = useApp()
-
-  const [schedules, setSchedules] = useState([])
-
-  useEffect(() => {
-    dbGet('deviare_pulse_schedules')
-      .then((saved) => setSchedules(Array.isArray(saved) ? saved : []))
-      .catch(() => {})
-  }, [])
 
   /* ── Step 1: scope ── */
   const [clients,  setClients]  = useState([])
@@ -196,7 +188,7 @@ export default function SendRemindersModal({ onClose }) {
     try {
       for (const msKey of selectedMsKeys) {
         const recipients = buildRecipientsForMilestone(
-          learners, clients, programs, courses, audience, msKey, schedules
+          learners, clients, programs, courses, audience, msKey
         )
         if (recipients.length === 0) continue
 

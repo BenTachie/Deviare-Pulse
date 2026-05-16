@@ -2,6 +2,7 @@ const sgMail = require('@sendgrid/mail')
 const db     = require('../models/db')
 const { buildEmail } = require('./templateService')
 const { getTemplateId } = require('../config/sendgridTemplates')
+const { resolveReminderContext } = require('./reminderResolver')
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '')
 
@@ -41,8 +42,9 @@ function htmlToText(html) {
 }
 
 /**
- * Send a single email via SendGrid and log the outcome.
- * @returns {{ logId: number, messageId: string }}
+ * Send a single email via raw HTML + SendGrid.
+ * Calls buildEmail() which substitutes {{Placeholder}} tokens in the stored template.
+ * Pass bodyHtml=null to force use of the stored SQLite template body.
  */
 async function sendEmail({ recipientEmail, recipientName, templateKey, subject, bodyHtml, variables }) {
   const { subject: finalSubject, bodyHtml: finalBody } = buildEmail(templateKey, {
@@ -70,11 +72,9 @@ async function sendEmail({ recipientEmail, recipientName, templateKey, subject, 
     status = 'failed'
     error  = err?.response?.body?.errors?.[0]?.message || err.message || 'SendGrid error'
     console.error('[emailService] SendGrid error:', error)
-    // Re-throw so the controller can return a proper 502
-    const apiError = new Error(error)
-    apiError.status = 502
-    // Still log the failure before throwing
-    const result = stmtLog.run({
+    const apiError    = new Error(error)
+    apiError.status   = 502
+    const result      = stmtLog.run({
       recipient:    recipientEmail,
       template_key: templateKey || null,
       subject:      finalSubject,
@@ -99,9 +99,8 @@ async function sendEmail({ recipientEmail, recipientName, templateKey, subject, 
 }
 
 /**
- * Send a single email via a SendGrid Dynamic Template ID.
- * All personalisation is passed through dynamicTemplateData —
- * SendGrid renders the subject, HTML and plain-text from the stored template.
+ * Send a single email via a SendGrid Dynamic Template.
+ * All personalisation is passed through dynamicTemplateData.
  */
 async function sendTemplateEmail({ recipientEmail, recipientName, templateId, templateKey, dynamicTemplateData }) {
   const message = {
@@ -149,10 +148,15 @@ async function sendTemplateEmail({ recipientEmail, recipientName, templateId, te
 }
 
 /**
- * Send bulk emails sequentially, collecting per-recipient results.
+ * Send bulk emails sequentially, resolving each recipient's DueDate and
+ * DaysRemaining from the backend schedule database using the server clock.
+ *
+ * Each recipient object may carry:
+ *   { email, name, clientName, projectName, courseName, cohort, variables }
+ *
  * Uses a SendGrid Dynamic Template when a template ID is configured for
- * the given key; falls back to raw-HTML sending if not.
- * Never throws — failures are captured in the results array.
+ * the given milestone key; falls back to raw-HTML sending otherwise.
+ * Never throws — per-recipient failures are captured in the results array.
  */
 async function sendBulkEmails({ recipients, templateKey, subject, bodyHtml, additionalNote }) {
   const results    = []
@@ -161,34 +165,54 @@ async function sendBulkEmails({ recipients, templateKey, subject, bodyHtml, addi
 
   for (const r of recipients) {
     try {
+      // ── Resolve dates for this recipient from the backend schedule store ──
+      const resolved = resolveReminderContext({
+        clientName:  r.clientName,
+        projectName: r.projectName,
+        courseName:  r.courseName,
+        cohort:      r.cohort,
+        milestoneKey: templateKey,
+      })
+
+      if (!resolved._scheduleFound) {
+        console.warn(`[sendBulkEmails] No matching schedule for ${r.email} (client=${r.clientName}, course=${r.courseName})`)
+      }
+
+      const { _scheduleFound, _milestoneFound, _scheduleId, ...resolvedVars } = resolved
+
+      // Merge: resolver values override anything the frontend may have supplied
+      const enrichedVars = {
+        ...(r.variables || {}),
+        ...resolvedVars,   // DueDate, DueDateISO, DaysRemaining, MilestoneName
+        LMSLoginUrl: lmsUrl,
+        ...(additionalNote?.trim() ? { AdditionalNote: escapeHtml(additionalNote.trim()) } : {}),
+      }
+
       let out
 
       if (templateId) {
-        const dynamicTemplateData = {
-          ...(r.variables || {}),
-          LMSLoginUrl: lmsUrl,
-          ...(additionalNote?.trim() ? { AdditionalNote: additionalNote.trim() } : {}),
-        }
         out = await sendTemplateEmail({
           recipientEmail: r.email,
           recipientName:  r.name,
           templateId,
           templateKey,
-          dynamicTemplateData,
+          dynamicTemplateData: enrichedVars,
         })
       } else {
-        // Fallback: raw HTML (used when no SendGrid template ID is configured)
-        let body = bodyHtml
-        if (additionalNote?.trim()) {
-          body = (body || '') + `<hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb;"><p style="font-size:13px;color:#6b7280;font-style:italic;">${escapeHtml(additionalNote.trim())}</p>`
+        // Raw-HTML path: pass bodyHtml=null so buildEmail uses the stored template,
+        // ensuring {{DueDate}} / {{DaysRemaining}} placeholders are still present
+        // for substitution with the freshly resolved values.
+        let rawBody = null
+        if (additionalNote?.trim() && bodyHtml) {
+          rawBody = bodyHtml + `<hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb;"><p style="font-size:13px;color:#6b7280;font-style:italic;">${escapeHtml(additionalNote.trim())}</p>`
         }
         out = await sendEmail({
           recipientEmail: r.email,
           recipientName:  r.name,
           templateKey,
           subject,
-          bodyHtml: body,
-          variables: r.variables || {},
+          bodyHtml: rawBody,
+          variables: enrichedVars,
         })
       }
 

@@ -3,9 +3,21 @@ const { body, validationResult } = require('express-validator')
 /** Validation rules for POST /send-reminder */
 const sendReminderRules = [
   body('recipientEmail').isEmail().withMessage('recipientEmail must be a valid email'),
+
+  // milestoneKey is the canonical field; templateKey is accepted as a backward-compat alias
+  body('milestoneKey').optional().isString(),
   body('templateKey').optional().isString(),
-  body('subject').notEmpty().withMessage('subject is required'),
-  body('bodyHtml').notEmpty().withMessage('bodyHtml is required'),
+
+  // Learner context used by the backend resolver to find the matching schedule
+  body('clientName').optional().isString(),
+  body('projectName').optional().isString(),
+  body('courseName').optional().isString(),
+  body('cohort').optional().isString(),
+
+  // subject / bodyHtml are optional overrides; backend uses stored template when absent
+  body('subject').optional().isString(),
+  body('bodyHtml').optional().isString(),
+
   body('variables').optional().isObject(),
 ]
 
@@ -13,8 +25,14 @@ const sendReminderRules = [
 const sendBulkRules = [
   body('recipients').isArray({ min: 1 }).withMessage('recipients must be a non-empty array'),
   body('recipients.*.email').isEmail().withMessage('each recipient must have a valid email'),
+
+  // Learner context per recipient — used by the resolver
+  body('recipients.*.clientName').optional().isString(),
+  body('recipients.*.projectName').optional().isString(),
+  body('recipients.*.courseName').optional().isString(),
+  body('recipients.*.cohort').optional().isString(),
+
   body('templateKey').notEmpty().withMessage('templateKey is required'),
-  // subject and bodyHtml are optional — backend uses the SendGrid template when a templateId is configured
   body('subject').optional().isString(),
   body('bodyHtml').optional().isString(),
   body('additionalNote').optional().isString(),

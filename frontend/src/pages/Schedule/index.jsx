@@ -8,6 +8,7 @@ import AutomationLog from './AutomationLog'
 import NewScheduleModal from '../../components/modals/NewScheduleModal'
 import { DEMO_SCHEDULE, MILESTONE_TYPES } from '../../data/schedules'
 import { dbGet, dbSet } from '../../utils/db'
+import { syncSchedulesToBackend, deleteBackendSchedule } from '../../services/scheduleApi'
 import { useToast } from '../../components/context/ToastContext'
 import styles from './Schedule.module.css'
 
@@ -102,30 +103,44 @@ export default function SchedulePage() {
   const [showNewModal, setShowNewModal]       = useState(false)
   const [pendingMilestones, setPendingMilestones] = useState({})
 
-  // Load persisted schedules from IndexedDB on mount; seed demo on first visit
+  // Load persisted schedules from IndexedDB on mount; seed demo on first visit.
+  // Also syncs the loaded schedules to the backend so the reminder resolver is
+  // always primed — even if no explicit Save has been clicked yet.
   useEffect(() => {
     async function load() {
+      let loaded
       try {
         const stored = await dbGet(SCHEDULES_KEY)
         if (Array.isArray(stored) && stored.length > 0) {
+          loaded = stored
           setSchedules(stored)
         } else {
-          const initial = [DEMO_SCHEDULE]
-          setSchedules(initial)
-          await dbSet(SCHEDULES_KEY, initial)
+          loaded = [DEMO_SCHEDULE]
+          setSchedules(loaded)
+          await dbSet(SCHEDULES_KEY, loaded)
         }
       } catch (err) {
         console.error('Failed to load schedules:', err)
-        setSchedules([DEMO_SCHEDULE])
+        loaded = [DEMO_SCHEDULE]
+        setSchedules(loaded)
       } finally {
         setIsReady(true)
       }
+      // Warm the backend resolver with locally stored schedules (fire-and-forget)
+      syncSchedulesToBackend(loaded).catch((err) =>
+        console.warn('[Schedule] Initial backend sync failed:', err.message)
+      )
     }
     load()
   }, [])
 
   const persist = useCallback((next) => {
     dbSet(SCHEDULES_KEY, next).catch(console.error)
+    // Keep backend schedule store in sync so the reminder resolver always has
+    // the latest milestone due dates when generating email payloads.
+    syncSchedulesToBackend(next).catch((err) =>
+      console.warn('[Schedule] Backend sync failed (emails may use stale dates):', err.message)
+    )
   }, [])
 
   const selectedSchedule = schedules.find((s) => s.id === selectedId)
@@ -196,6 +211,10 @@ export default function SchedulePage() {
       persist(next)
       return next
     })
+    // Also remove from the backend resolver store
+    deleteBackendSchedule(id).catch((err) =>
+      console.warn('[Schedule] Backend delete failed:', err.message)
+    )
     if (selectedId === id) setSelectedId(null)
     showToast('Schedule and linked automation removed.', 'info')
   }, [selectedId, persist, showToast])

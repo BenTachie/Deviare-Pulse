@@ -1,7 +1,9 @@
 const db              = require('../models/db')
 const { listTemplates, getTemplateByKey } = require('../services/templateService')
-const { sendEmail, sendBulkEmails }       = require('../services/emailService')
-const sgApi                               = require('../services/sendgridApiService')
+const { sendEmail, sendTemplateEmail, sendBulkEmails } = require('../services/emailService')
+const { getTemplateId }            = require('../config/sendgridTemplates')
+const { resolveReminderContext }   = require('../services/reminderResolver')
+const sgApi                        = require('../services/sendgridApiService')
 
 /* ── GET /api/email/templates ─────────────────────────────────────── */
 function getTemplates(_req, res) {
@@ -27,11 +29,88 @@ function getTemplate(req, res) {
 }
 
 /* ── POST /api/email/send-reminder ────────────────────────────────── */
+/**
+ * Single-recipient reminder.
+ *
+ * Request body:
+ *   recipientEmail  — required
+ *   recipientName   — optional
+ *   milestoneKey    — milestone to remind about (also accepted as templateKey)
+ *   clientName      — learner's client  (used by resolver)
+ *   projectName     — learner's project (used by resolver)
+ *   courseName      — learner's course  (used by resolver)
+ *   cohort          — learner's cohort  (used by resolver)
+ *   subject         — optional subject override
+ *   variables       — partial variables; resolver fills DueDate/DaysRemaining/MilestoneName
+ *
+ * The backend resolves DueDate and DaysRemaining from the saved schedule database
+ * using the server's clock — no frontend date is trusted for the actual send.
+ */
 async function sendReminder(req, res) {
-  const { recipientEmail, recipientName, templateKey, subject, bodyHtml, variables } = req.body
+  const {
+    recipientEmail,
+    recipientName,
+    milestoneKey: milestoneKeyField,
+    templateKey,          // alias kept for backward-compat
+    clientName,
+    projectName,
+    courseName,
+    cohort,
+    subject,
+    variables,
+  } = req.body
+
+  const milestoneKey = milestoneKeyField || templateKey || 'activation'
+
+  // Resolve schedule → milestone → dates on the backend
+  const resolved = resolveReminderContext({ clientName, projectName, courseName, cohort, milestoneKey })
+
+  if (!resolved._scheduleFound) {
+    console.warn(`[sendReminder] No matching schedule for ${recipientEmail} (client=${clientName}, course=${courseName}, cohort=${cohort})`)
+  }
+
+  // Strip internal diagnostics before building the email payload
+  const { _scheduleFound, _milestoneFound, _scheduleId, ...resolvedVars } = resolved
+
+  const enrichedVariables = {
+    ...(variables || {}),
+    ...resolvedVars,            // DueDate, DueDateISO, DaysRemaining, MilestoneName
+  }
+
+  const lmsUrl     = process.env.LMS_URL || 'https://platform.deviare.africa'
+  const templateId = getTemplateId(milestoneKey)
 
   try {
-    const result = await sendEmail({ recipientEmail, recipientName, templateKey, subject, bodyHtml, variables })
+    let result
+
+    if (templateId) {
+      // Send via SendGrid Dynamic Template — backend owns all variable values
+      const dynamicTemplateData = {
+        ...enrichedVariables,
+        LMSLoginUrl: lmsUrl,
+      }
+      result = await sendTemplateEmail({
+        recipientEmail,
+        recipientName,
+        templateId,
+        templateKey: milestoneKey,
+        dynamicTemplateData,
+      })
+    } else {
+      // Raw-HTML fallback: use stored SQLite template so placeholders are still
+      // in the body and get substituted with the resolver's fresh values.
+      // bodyHtml from the frontend is intentionally ignored here — the stored
+      // template is the authoritative source.
+      result = await sendEmail({
+        recipientEmail,
+        recipientName,
+        templateKey: milestoneKey,
+        subject,
+        bodyHtml: null,          // signals buildEmail to use stored template
+        variables: enrichedVariables,
+      })
+    }
+
     res.status(200).json({ success: true, ...result })
   } catch (err) {
     res.status(err.status || 500).json({ success: false, error: err.message, logId: err.logId })
@@ -39,6 +118,14 @@ async function sendReminder(req, res) {
 }
 
 /* ── POST /api/email/send-reminders ───────────────────────────────── */
+/**
+ * Bulk campaign send.
+ *
+ * Each recipient in the array may carry:
+ *   email, name, clientName, projectName, courseName, cohort, variables
+ *
+ * The backend resolves DueDate/DaysRemaining per recipient from the schedule DB.
+ */
 async function sendReminders(req, res) {
   const { recipients, templateKey, subject, bodyHtml, additionalNote } = req.body
 
@@ -104,4 +191,9 @@ async function updateSgTemplate(req, res) {
   }
 }
 
-module.exports = { getTemplates, getTemplate, sendReminder, sendReminders, getLogs, getSgTemplates, getSgTemplateContent, updateSgTemplate }
+module.exports = {
+  getTemplates, getTemplate,
+  sendReminder, sendReminders,
+  getLogs,
+  getSgTemplates, getSgTemplateContent, updateSgTemplate,
+}

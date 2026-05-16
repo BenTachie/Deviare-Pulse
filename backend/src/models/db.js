@@ -35,6 +35,20 @@ _db.exec(`
     error        TEXT,
     sent_at      TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS schedules (
+    id         TEXT PRIMARY KEY,
+    name       TEXT NOT NULL,
+    client     TEXT NOT NULL,
+    project    TEXT,
+    cohort     TEXT,
+    courses    TEXT NOT NULL DEFAULT '[]',
+    milestones TEXT NOT NULL DEFAULT '[]',
+    status     TEXT NOT NULL DEFAULT 'Draft',
+    start_date TEXT,
+    end_date   TEXT,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `)
 
 /*

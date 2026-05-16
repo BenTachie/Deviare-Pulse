@@ -1,7 +1,8 @@
-const express    = require('express')
-const cors       = require('cors')
-const morgan     = require('morgan')
-const emailRoutes = require('./src/routes/emailRoutes')
+const express         = require('express')
+const cors            = require('cors')
+const morgan          = require('morgan')
+const emailRoutes     = require('./src/routes/emailRoutes')
+const scheduleRoutes  = require('./src/routes/scheduleRoutes')
 
 const app = express()
 
@@ -16,7 +17,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true)
     cb(new Error(`CORS: origin ${origin} not allowed`))
   },
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 
@@ -28,7 +29,8 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'))
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }))
 
 /* ── API routes ─────────────────────────────────────────────────────── */
-app.use('/api/email', emailRoutes)
+app.use('/api/email',     emailRoutes)
+app.use('/api/schedules', scheduleRoutes)
 
 /* ── Global error handler ───────────────────────────────────────────── */
 // eslint-disable-next-line no-unused-vars

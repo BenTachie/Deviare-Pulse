@@ -122,7 +122,8 @@ export const LMS_URL = 'https://platform.deviare.africa'
 /**
  * Resolve a learner's milestone deadline from the loaded schedule list.
  * Matches learner.cohort → schedule.cohort → milestone.key.
- * Returns formatted dueDate string and daysRemaining count.
+ * Returns formatted dueDate string, raw ISO date, and daysRemaining count.
+ * daysRemaining is positive (days left), zero (due today), or negative (days overdue).
  */
 export function getMilestoneDates(schedules, learner, milestoneKey) {
   let schedule = null
@@ -147,28 +148,55 @@ export function getMilestoneDates(schedules, learner, milestoneKey) {
 
   const milestone = schedule?.milestones?.find((m) => m.key === milestoneKey)
 
-  if (!milestone?.dueDate) {
-    return {
-      dueDate:       learner?.completionDate || 'your programme deadline',
-      daysRemaining: '7',
+  /** Compute diff from an ISO date string; returns null on parse failure. */
+  function diffFromISO(iso) {
+    try {
+      const due   = new Date(iso)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      due.setHours(0, 0, 0, 0)
+      return {
+        diff:       Math.ceil((due - today) / (1000 * 60 * 60 * 24)),
+        dueDateObj: due,
+      }
+    } catch {
+      return null
     }
   }
 
-  const due   = new Date(milestone.dueDate)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  due.setHours(0, 0, 0, 0)
-  const diff = Math.ceil((due - today) / (1000 * 60 * 60 * 24))
+  if (milestone?.dueDate) {
+    const result = diffFromISO(milestone.dueDate)
+    if (result) {
+      return {
+        dueDate:       result.dueDateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        dueDateISO:    milestone.dueDate,
+        daysRemaining: String(result.diff),
+      }
+    }
+  }
+
+  // Fallback: use learner's completionDate when no matching milestone is found
+  if (learner?.completionDate) {
+    const result = diffFromISO(learner.completionDate)
+    if (result) {
+      return {
+        dueDate:       result.dueDateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        dueDateISO:    learner.completionDate,
+        daysRemaining: String(result.diff),
+      }
+    }
+  }
 
   return {
-    dueDate:       due.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-    daysRemaining: diff > 0 ? String(diff) : '0',
+    dueDate:       'your programme deadline',
+    dueDateISO:    null,
+    daysRemaining: 'N/A',
   }
 }
 
 /**
  * Replace {{placeholders}} with real learner data.
- * Pass overrides.dueDate / overrides.daysRemaining to inject schedule-sourced dates.
+ * Pass overrides for any of: dueDate, daysRemaining, requiredTarget, currentProgress.
  */
 export function substituteVars(str, learner, milestoneLabel = '', overrides = {}) {
   const firstName = learner.name?.split(' ')[0] || learner.name || ''
@@ -176,10 +204,10 @@ export function substituteVars(str, learner, milestoneLabel = '', overrides = {}
     '{{LearnerName}}':     firstName,
     '{{CourseName}}':      learner.course || '',
     '{{MilestoneName}}':   milestoneLabel,
-    '{{CurrentProgress}}': `${Math.round(learner.oslProgress ?? 0)}%`,
-    '{{RequiredTarget}}':  '85%',
-    '{{DueDate}}':         overrides.dueDate     ?? (learner?.completionDate || 'your programme deadline'),
-    '{{DaysRemaining}}':   overrides.daysRemaining ?? '7',
+    '{{CurrentProgress}}': overrides.currentProgress ?? `${Math.round(learner.oslProgress ?? 0)}%`,
+    '{{RequiredTarget}}':  overrides.requiredTarget  ?? '85%',
+    '{{DueDate}}':         overrides.dueDate         ?? (learner?.completionDate || 'your programme deadline'),
+    '{{DaysRemaining}}':   overrides.daysRemaining   ?? 'N/A',
     '{{LMSLoginUrl}}':     LMS_URL,
   }
   let result = str
