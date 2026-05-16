@@ -1,0 +1,201 @@
+/* ── Trigger button ─────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 7px 8px 7px 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 12.5px;
+  color: var(--text-secondary, #475569);
+  text-align: left;
+  outline: none;
+  min-width: 0;
+}
+
+.trigger:hover {
+  color: var(--text-primary, #1E293B);
+}
+
+.triggerActive {
+  color: var(--text-primary, #1E293B);
+}
+
+.triggerLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Count badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #1D4ED8;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Chevron */
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-secondary, #475569);
+  transition: transform 0.15s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown panel (rendered via portal — position: fixed via inline style) ── */
+.panel {
+  position: fixed;
+  background: var(--white, #fff);
+  border: 1px solid var(--border, #DDE3ED);
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0, 0, 0, 0.06);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* ── Search row ─────────────────────────────────────────────────────── */
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border, #DDE3ED);
+  background: #FAFBFC;
+}
+
+.searchIcon {
+  color: #94A3B8;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--text-primary, #1E293B);
+  background: transparent;
+  min-width: 0;
+}
+
+.searchInput::placeholder {
+  color: #94A3B8;
+}
+
+.clearQuery {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #94A3B8;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+
+.clearQuery:hover {
+  color: var(--text-secondary, #475569);
+}
+
+/* ── Option list ────────────────────────────────────────────────────── */
+.list {
+  max-height: 228px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.list::-webkit-scrollbar        { width: 4px; }
+.list::-webkit-scrollbar-track  { background: transparent; }
+.list::-webkit-scrollbar-thumb  { background: #CBD5E1; border-radius: 4px; }
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 12.5px;
+  color: var(--text-secondary, #475569);
+  user-select: none;
+  transition: background 0.08s;
+}
+
+.item:hover {
+  background: #F1F5F9;
+}
+
+.itemChecked {
+  background: #EFF6FF;
+  color: var(--text-primary, #1E293B);
+}
+
+.itemChecked:hover {
+  background: #DBEAFE;
+}
+
+.checkbox {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  accent-color: #1D4ED8;
+  cursor: pointer;
+}
+
+.itemText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #94A3B8;
+  font-style: italic;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────── */
+.footer {
+  border-top: 1px solid var(--border, #DDE3ED);
+  padding: 6px 12px;
+  background: #FAFBFC;
+}
+
+.clearAll {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 11.5px;
+  color: #1D4ED8;
+  padding: 0;
+}
+
+.clearAll:hover {
+  text-decoration: underline;
+}

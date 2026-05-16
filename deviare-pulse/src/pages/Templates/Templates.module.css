@@ -1,0 +1,314 @@
+/* ── Page header ─────────────────────────────────────────────────── */
+.pageHeader {
+  display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px;
+}
+.pageTitle { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--text-primary); }
+.pageSub   { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Layout ──────────────────────────────────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── Left panel ──────────────────────────────────────────────────── */
+.panelLabel {
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px;
+}
+
+/* ── Template list cards ─────────────────────────────────────────── */
+.tplList { display: flex; flex-direction: column; gap: 8px; }
+
+.tplCard {
+  background: var(--white); border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+  cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s;
+  outline: none;
+}
+.tplCard:hover { box-shadow: var(--shadow-card); }
+.tplCardSelected { border-color: var(--blue-light); border-width: 1.5px; box-shadow: 0 0 0 3px rgba(45,125,210,0.08); }
+
+.tplCardRow { display: flex; align-items: center; gap: 10px; }
+.tplDot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.tplCardInfo { flex: 1; min-width: 0; }
+.tplName { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.tplMeta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Available Variables card ────────────────────────────────────── */
+.varsCard {
+  margin-top: 16px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.varsCardHeader {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+.varsCardTitle { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.varsCardBody { padding: 12px 14px; }
+.varsCardHint { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+.varChipList { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.varChip {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; background: var(--info-bg); color: var(--info);
+  border: 1px solid rgba(45,125,210,0.2); border-radius: 20px;
+  font-size: 11.5px; font-weight: 500; font-family: var(--font-mono);
+  cursor: pointer; transition: background 0.12s; white-space: nowrap;
+}
+.varChip:hover { background: #d0e8ff; }
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.emptyEditor {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 440px; background: var(--white);
+  border: 1px solid var(--border-light); border-radius: var(--radius-lg);
+}
+.emptyIcon {
+  width: 56px; height: 56px; background: var(--surface2);
+  border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px;
+}
+.emptyTitle { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+.emptySub   { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Stage strip ─────────────────────────────────────────────────── */
+.stageStrip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.stageDot  { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.stageLabel { font-size: 13px; font-weight: 600; }
+.stageLastEdited { font-size: 12px; color: var(--text-muted); }
+
+.resetBtn {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.resetBtn:hover { background: var(--surface); }
+
+/* ── Subject card ────────────────────────────────────────────────── */
+.subjectCard {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.subjectLabel {
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  letter-spacing: .04em; text-transform: uppercase;
+  white-space: nowrap; min-width: 54px;
+}
+.subjectInput {
+  flex: 1; border: none; background: none; outline: none;
+  font-family: var(--font); font-size: 13.5px; font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* ── Body editor card ────────────────────────────────────────────── */
+.bodyCard {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+/* ── Rich editor ─────────────────────────────────────────────────── */
+.editorWrap {}
+
+.toolbar {
+  display: flex; align-items: center; gap: 2px; flex-wrap: wrap;
+  padding: 8px 12px; background: var(--surface); border-bottom: 1px solid var(--border-light);
+}
+.toolbarBtn {
+  width: 30px; height: 28px; border: none; background: none;
+  border-radius: var(--radius-sm); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); font-size: 13px; font-weight: 600;
+  font-family: var(--font); transition: background 0.12s;
+}
+.toolbarBtn:hover { background: var(--surface2); color: var(--text-primary); }
+.toolbarBtnActive { background: var(--info-bg); color: var(--info); }
+.toolbarBtnText { width: auto; padding: 0 8px; font-size: 11px; font-weight: 600; }
+.toolbarSep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+.toolbarAutoSave {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.editor {
+  min-height: 280px; padding: 16px 18px;
+  outline: none; font-size: 13.5px; line-height: 1.75;
+  color: var(--text-primary); font-family: var(--font);
+}
+.editor:focus { outline: none; }
+.editor b, .editor strong { font-weight: 600; }
+
+.editorFooter {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px; border-top: 1px solid var(--border-light);
+  background: var(--surface);
+}
+.editorFooterSig { font-size: 12px; color: var(--text-muted); }
+.dirtyIndicator  { font-size: 11px; color: var(--warning, #e8890c); }
+
+/* ── Notification Stages card ────────────────────────────────────── */
+.notifStagesCard {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.notifStagesHeader {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-light);
+}
+.notifStagesTitle { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.notifStagesSub   { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.notifStagesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px 18px;
+}
+
+.notifStageBox {
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+.notifStageBoxPre  { background: var(--info-bg, #eff6ff); }
+.notifStageBoxDue  { background: var(--warning-bg, #fffbeb); }
+.notifStageBoxPost { background: var(--danger-bg, #fef2f2); }
+
+.notifStageTag {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 4px;
+}
+.notifStageBoxPre  .notifStageTag  { color: var(--info, #2d7dd2); }
+.notifStageBoxDue  .notifStageTag  { color: var(--warning, #e8890c); }
+.notifStageBoxPost .notifStageTag  { color: var(--danger, #d63c3c); }
+
+.notifStageQuote { font-size: 12px; color: var(--text-primary); }
+.notifStageDesc  { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Preview modal ───────────────────────────────────────────────── */
+.previewOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+.previewModal {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  width: 640px;
+  max-width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.previewModalHeader {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 18px 20px; border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+.previewModalTitle { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.previewModalSub   { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.previewModalClose {
+  border: none; background: none; font-size: 20px; cursor: pointer;
+  color: var(--text-muted); line-height: 1; padding: 0 4px;
+}
+.previewModalClose:hover { color: var(--text-primary); }
+
+.previewEmail {
+  overflow-y: auto;
+  flex: 1;
+}
+.previewEmailHeader {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--blue-dark, #0b2545); padding: 14px 20px;
+  flex-shrink: 0;
+}
+.previewEmailLabel   { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+.previewEmailSubject { font-size: 13px; color: white; font-weight: 500; margin-top: 2px; }
+.previewEmailBody {
+  padding: 24px 28px;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+.previewSignature {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.previewModalFooter {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 14px 20px; border-top: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+.previewCancelBtn {
+  padding: 8px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.previewCancelBtn:hover { background: var(--surface); }
+.previewApproveBtn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--blue-dark, #1B4F8A);
+  font-family: var(--font);
+  font-size: 13px; font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.previewApproveBtn:hover { opacity: 0.88; }
+
+@media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 768px)  { .notifStagesGrid { grid-template-columns: 1fr; } }

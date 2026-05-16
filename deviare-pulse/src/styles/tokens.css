@@ -1,0 +1,50 @@
+:root {
+  /* Brand Colors */
+  --blue-dark: #0b2545;
+  --blue-mid: #1b4f8a;
+  --blue-light: #2d7dd2;
+  --cyan: #00c2cb;
+  --cyan-soft: #e0f7fa;
+
+  /* Surfaces */
+  --surface: #f4f6fa;
+  --surface2: #eaeef5;
+  --white: #ffffff;
+
+  /* Text */
+  --text-primary: #0b1f3a;
+  --text-secondary: #4a6080;
+  --text-muted: #8da0b8;
+
+  /* Borders */
+  --border: #d0d9e8;
+  --border-light: #e8edf5;
+
+  /* Semantic */
+  --success: #0ca678;
+  --success-bg: #e6f9f3;
+  --warning: #e8890c;
+  --warning-bg: #fff4e0;
+  --danger: #d63c3c;
+  --danger-bg: #fdeaea;
+  --info: #2d7dd2;
+  --info-bg: #eaf3ff;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 4px rgba(11, 37, 69, 0.06), 0 4px 16px rgba(11, 37, 69, 0.04);
+  --shadow-elevated: 0 8px 32px rgba(11, 37, 69, 0.12);
+
+  /* Typography */
+  --font: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  /* Layout */
+  --sidebar-w: 240px;
+  --header-h: 56px;
+}

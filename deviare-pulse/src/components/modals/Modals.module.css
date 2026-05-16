@@ -1,0 +1,426 @@
+.form { display: flex; flex-direction: column; gap: 0; }
+.formRow { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.formGroup { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.formGroup:last-child { margin-bottom: 0; }
+
+.sectionLabel {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;
+}
+
+.label { font-size: 12.5px; font-weight: 500; color: var(--text-secondary); }
+
+.input {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  font-family: var(--font); font-size: 13px;
+  color: var(--text-primary); background: var(--white);
+  outline: none; transition: border-color 0.15s;
+}
+.input:focus { border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(45,125,210,0.1); }
+
+/* Milestone filter checkboxes */
+.msFilterGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.msCheck {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius-md); cursor: pointer;
+  font-size: 12.5px; font-weight: 500; color: var(--text-secondary);
+  user-select: none; transition: all 0.12s;
+}
+.msCheck:hover { border-color: var(--blue-light); background: var(--info-bg); color: var(--info); }
+.msCheckActive { border-color: var(--blue-light); background: var(--info-bg); color: var(--text-primary); }
+.msCheck input { width: 14px; height: 14px; accent-color: var(--blue-dark); flex-shrink: 0; }
+
+/* Recipient badge */
+.recipientBadge {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface); border-radius: var(--radius-md);
+  padding: 14px 16px; margin-top: 16px;
+}
+.recipientNum {
+  font-size: 32px; font-weight: 700;
+  color: var(--blue-dark); letter-spacing: -0.03em; line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ── Send Reminder Modal ─────────────────────────────────────────── */
+.reminderForm { display: flex; flex-direction: column; gap: 16px; }
+
+/* Info card */
+.infoCard {
+  display: flex;
+  align-items: stretch;
+  background: var(--surface, #F8F9FB);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  gap: 0;
+}
+
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  padding: 0 16px;
+  min-width: 0;
+}
+.infoCol:first-child { padding-left: 0; }
+.infoCol:last-child  { padding-right: 0; }
+
+.infoLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.infoName  { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.infoEmail { font-size: 11.5px; color: var(--text-muted); }
+.infoValue { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
+
+.infoDivider {
+  width: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 2px 0;
+}
+
+/* Fields */
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.fieldSelect,
+.fieldInput {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.fieldSelect {
+  padding-right: 32px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238DA0B8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
+}
+.fieldSelect:focus,
+.fieldInput:focus { border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(45,125,210,0.1); }
+
+/* Message editor */
+.msgHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.msgTools { display: flex; align-items: center; gap: 4px; }
+
+.msgToolBtn {
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--white);
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.12s;
+}
+.msgToolBtn:hover { background: var(--surface); border-color: var(--blue-light); color: var(--blue-dark); }
+
+.msgToolBtnReset {
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--white);
+  font-size: 11.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.12s;
+}
+.msgToolBtnReset:hover { color: var(--danger, #dc2626); border-color: var(--danger, #dc2626); }
+
+.msgBody {
+  min-height: 180px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-primary);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.msgBody:focus { border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(45,125,210,0.1); }
+
+/* Variables */
+.variables {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.variablesLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.variableChips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.varChip {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--surface, #F0F4F8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  font-size: 11px;
+  color: var(--blue-dark, #2D7DD2);
+  font-family: var(--font-mono);
+  cursor: default;
+}
+
+/* Footer */
+.reminderFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
+}
+
+.cancelBtn {
+  padding: 8px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cancelBtn:hover { background: var(--surface); }
+
+.sendBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--blue-dark, #1B4F8A);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.sendBtn:hover:not(:disabled) { opacity: 0.88; }
+.sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Send Reminders Modal (bulk / scoped) ────────────────────────── */
+.remindBody { display: flex; flex-direction: column; gap: 16px; }
+
+/* Step label */
+.stepLabel {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;
+}
+
+/* Step 1 — scope section wrapper */
+.remindStep {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+.scopeGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: start; }
+
+.scopeColLabel {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;
+}
+
+.scopeSelect {
+  width: 100%; padding: 9px 32px 9px 12px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-md);
+  font-family: var(--font); font-size: 12.5px;
+  color: var(--text-primary); background: var(--white);
+  outline: none; cursor: pointer; box-sizing: border-box;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238DA0B8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.scopeSelect:hover:not(:disabled) { border-color: var(--blue-light); }
+.scopeSelect:focus { border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(45,125,210,0.1); outline: none; }
+.scopeSelectFilled { border-color: var(--blue-light); background-color: #f5faff; }
+.scopeSelect:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--border); background-color: var(--surface); }
+
+/* Scope multi-select wrapper — gives MultiSelectDropdown a bordered input look */
+.scopeDropdownWrap {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  min-height: 37px;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.scopeDropdownWrap:focus-within {
+  border-color: var(--blue-light);
+  box-shadow: 0 0 0 3px rgba(45,125,210,0.1);
+}
+.scopeDropdownWrapActive {
+  border-color: var(--blue-light);
+  background-color: #f5faff;
+}
+
+/* Step 3 — audience pills */
+.audiencePillGroup { display: flex; gap: 8px; flex-wrap: wrap; }
+.audiencePill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border: 1.5px solid var(--border); border-radius: 20px;
+  background: var(--white); font-family: var(--font); font-size: 12.5px;
+  font-weight: 500; color: var(--text-secondary); cursor: pointer;
+  transition: all 0.15s; user-select: none;
+}
+.audiencePill:hover { border-color: var(--blue-light); color: var(--info); }
+.audiencePillActive { background: var(--blue-dark); border-color: var(--blue-dark); color: white; }
+.audiencePillDimmed { opacity: 0.38; pointer-events: none; }
+.audiencePillDot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0.7; flex-shrink: 0; }
+
+/* Summary panel */
+.remindSummary {
+  border: 1.5px solid var(--border-light); border-radius: var(--radius-lg);
+  overflow: hidden; transition: border-color 0.2s;
+}
+.remindSummaryPopulated { border-color: var(--blue-light); }
+
+.remindSummaryHeader {
+  background: var(--blue-dark, #1B4F8A); padding: 10px 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.remindSummaryTitle { font-size: 12px; font-weight: 600; color: white; }
+.remindScopeTag {
+  margin-left: auto; font-size: 10px;
+  background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7);
+  padding: 2px 8px; border-radius: 10px; transition: all 0.2s;
+}
+.remindScopeTagActive { background: rgba(0,194,203,0.2); color: #00C2CB; }
+
+.remindSummaryGrid {
+  padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.remindSummaryGrid3 { grid-template-columns: 1fr 1fr 1fr; }
+.summaryCellFull    { grid-column: 1 / -1; }
+.summaryCell { display: flex; flex-direction: column; gap: 2px; }
+.summaryCellLabel {
+  font-size: 10px; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.summaryCellValue { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.summaryCellMuted { color: var(--text-muted); }
+
+/* Recipient count row */
+.recipientCountBadge {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 16px 14px;
+}
+.recipientBigNum { font-size: 32px; font-weight: 700; color: var(--text-muted); letter-spacing: -0.03em; line-height: 1; }
+.recipientBigNumActive { color: var(--blue-dark); }
+.recipientSubLabel { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.milestoneCountWrap { margin-left: auto; text-align: right; }
+.milestoneNum { font-size: 18px; font-weight: 700; color: var(--text-muted); }
+.milestoneNumActive { color: var(--warning); }
+
+/* Optional tag */
+.optionalTag { font-size: 11px; font-weight: 400; color: var(--text-muted); }
+
+/* Textarea */
+.fieldTextarea {
+  width: 100%; padding: 9px 12px; resize: none;
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  font-family: var(--font); font-size: 13px;
+  color: var(--text-primary); background: var(--white);
+  outline: none; transition: border-color 0.15s; box-sizing: border-box;
+}
+.fieldTextarea:focus { border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(45,125,210,0.1); }
+
+/* Footer */
+.remindFooter {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%;
+}
+.remindValidation { font-size: 12px; color: var(--text-muted); flex: 1; }
+.remindFooterBtns { display: flex; gap: 10px; flex-shrink: 0; }
+
+/* Pulse animation when send button is enabled */
+@keyframes btn-ready {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(11,37,69,0); }
+  50%       { box-shadow: 0 0 0 6px rgba(11,37,69,0.1); }
+}
+
+/* ── Sending spinner ─────────────────────────────────────────────── */
+.sendingSpinner {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Error banner ────────────────────────────────────────────────── */
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  color: #dc2626;
+  line-height: 1.5;
+}
+
+.errorBanner svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Disabled message body ───────────────────────────────────────── */
+.msgBodyDisabled {
+  opacity: 0.55;
+  pointer-events: none;
+  background: var(--surface);
+}

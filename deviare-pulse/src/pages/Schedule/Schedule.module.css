@@ -1,0 +1,1015 @@
+.pageHeader {
+  display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px;
+}
+.pageTitle { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--text-primary); }
+.pageSub   { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.listLabel {
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px;
+}
+
+/* Schedule cards in list */
+.schedCard {
+  background: var(--white); border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow-card); margin-bottom: 10px;
+  cursor: pointer; transition: box-shadow 0.15s; outline: none;
+}
+.schedCard:hover    { box-shadow: var(--shadow-elevated); }
+.schedCardSelected  { border-color: var(--blue-light); border-width: 1.5px; }
+
+/* ── Redesigned card layout ─────────────────────────────────────── */
+/* ── Empty schedule list state ───────────────────────────────────── */
+.emptySchedules {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+}
+
+.schedCardTop {
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.schedCalIcon {
+  width: 38px;
+  height: 38px;
+  background: var(--info-bg, #EFF6FF);
+  border: 1px solid #BFDBFE;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.schedCardInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.schedCardActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.schedDeleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.12s, color 0.12s, border-color 0.12s;
+  flex-shrink: 0;
+}
+.schedCard:hover .schedDeleteBtn { opacity: 1; }
+.schedDeleteBtn:hover {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.schedCardClient {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--blue-dark, #1B4F8A);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 3px;
+}
+
+.schedCardName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.schedCardMeta {
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid var(--border-light);
+  padding: 10px 16px;
+  gap: 0;
+}
+
+.schedMetaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.schedMetaLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.schedMetaValue {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--blue-dark, #1B4F8A);
+  font-family: var(--font-mono);
+}
+
+.schedMetaDivider {
+  width: 1px;
+  background: var(--border-light);
+  margin: 0 12px;
+  align-self: stretch;
+}
+
+/* Legacy — kept for compatibility */
+.schedCardHeader {
+  padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; border-bottom: 1px solid var(--border-light);
+}
+.schedCardSub  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.schedCardBody { padding: 12px 16px; }
+.schedCardProgress { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 11px; color: var(--text-muted); }
+
+/* Empty state */
+.emptyDetail {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 440px; background: var(--white);
+  border: 1px solid var(--border-light); border-radius: var(--radius-lg);
+}
+.emptyIcon {
+  width: 56px; height: 56px; background: var(--surface2);
+  border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px;
+}
+.emptyTitle { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+.emptySub   { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* Detail controls */
+.detailControls {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+}
+
+/* Milestone builder */
+.builderMeta {
+  background: var(--white); border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg); padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.builderTitle { font-size: 14px; font-weight: 600; }
+.builderSub   { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.builderDateRow { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+
+.milestoneList {
+  background: var(--white); border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg); overflow: hidden;
+}
+
+.msGroup { border-bottom: 1px solid var(--border-light); }
+.msGroup:last-child { border-bottom: none; }
+.msDisabled .msGroupBody { opacity: 0.4; pointer-events: none; }
+
+.msGroupHeader {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer;
+}
+
+.msGroupBody {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  padding: 0 16px 14px 62px; align-items: flex-end;
+}
+
+/* Toggle switch */
+.msToggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.msToggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.msToggleTrack {
+  position: absolute; inset: 0; background: var(--border);
+  border-radius: 10px; cursor: pointer; transition: background 0.2s;
+}
+.msToggle input:checked + .msToggleTrack { background: var(--blue-light); }
+.msToggleThumb {
+  position: absolute; top: 3px; left: 3px;
+  width: 14px; height: 14px; background: white;
+  border-radius: 50%; pointer-events: none;
+  transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.msToggle input:checked ~ .msToggleThumb { transform: translateX(16px); }
+
+.msDot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.msLabel { font-size: 13px; font-weight: 600; color: var(--text-primary); flex: 1; }
+
+.msField { display: flex; flex-direction: column; gap: 4px; }
+.msFieldLabel { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+
+.msInput {
+  padding: 7px 10px; border: 1px solid var(--border);
+  border-radius: var(--radius-md); font-family: var(--font);
+  font-size: 13px; color: var(--text-primary);
+  background: var(--white); outline: none; width: 100%;
+  transition: border-color 0.15s;
+}
+.msInput:focus { border-color: var(--blue-light); }
+
+.triggerToggle {
+  display: flex; border: 1px solid var(--border);
+  border-radius: var(--radius-md); overflow: hidden; font-size: 11px;
+}
+.triggerBtn {
+  flex: 1; padding: 6px 10px; text-align: center; cursor: pointer;
+  font-family: var(--font); font-size: 11px; font-weight: 500;
+  border: none; background: none; color: var(--text-muted); transition: all 0.15s;
+}
+.triggerBtnActive { background: var(--blue-dark); color: white; }
+
+/* ── Milestone input size variants ──────────────────────────────── */
+.msInputDate  { width: 144px; }
+.msInputNum   { width: 58px; text-align: center; }
+.msInputSelect { width: 136px; }
+.msInputSelectWide { width: 220px; min-width: 220px; }
+.msFieldNoShrink   { flex-shrink: 0; }
+
+/* "X days before" inline wrapper */
+.reminderStartWrap { display: flex; align-items: center; gap: 6px; }
+.reminderStartLabel { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+/* ── Course tab bar ──────────────────────────────────────────────── */
+.courseTabBar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.courseTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.courseTab:hover { border-color: var(--blue-light); color: var(--blue-dark); }
+
+.courseTabActive {
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+  color: white;
+}
+
+.courseTabDot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* ── Threshold rows (OSL / LVC) ─────────────────────────────────── */
+.thresholdSectionLabel {
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.thresholdList { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+
+.thresholdRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: var(--surface, #F8F9FB);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  flex-wrap: wrap;
+}
+
+.thresholdPctWrap {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  background: var(--white);
+  flex-shrink: 0;
+  align-self: flex-end;
+  margin-bottom: 0;
+}
+
+.thresholdPctInput {
+  width: 40px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-dark, #2D7DD2);
+  outline: none;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.thresholdPctInput::-webkit-inner-spin-button,
+.thresholdPctInput::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+.thresholdPctSym {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue-dark);
+}
+
+.thresholdRemove {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  align-self: center;
+  flex-shrink: 0;
+  transition: color 0.12s;
+}
+.thresholdRemove:hover { color: var(--danger, #dc2626); }
+
+.addThresholdBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: none;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.addThresholdBtn:hover {
+  border-color: var(--blue-light);
+  color: var(--blue-dark);
+  background: var(--info-bg);
+}
+
+/* Calendar */
+.calWrap { background: var(--white); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 20px; }
+.calNav { display: flex; align-items: center; gap: 12px; }
+.calNavBtn {
+  width: 30px; height: 30px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--white);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s; color: var(--text-secondary); font-size: 18px; line-height: 1;
+}
+.calNavBtn:hover { background: var(--surface2); }
+.calMonthLabel { font-size: 14px; font-weight: 600; min-width: 140px; text-align: center; }
+
+.calGrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.calHeaderCell {
+  text-align: center; font-size: 11px; font-weight: 600;
+  color: var(--text-muted); letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 8px 0;
+}
+.calDay {
+  min-height: 80px; border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); padding: 6px;
+  background: var(--white); cursor: pointer; transition: background 0.12s;
+}
+.calDay:hover { background: var(--surface); }
+.calToday     { border-color: var(--blue-light); background: var(--info-bg); }
+.calOtherMonth { background: var(--surface); opacity: 0.5; }
+.calDayNum  { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; }
+.calTodayNum {
+  width: 22px; height: 22px; background: var(--blue-light); color: white;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px;
+}
+.calEvent {
+  font-size: 10px; font-weight: 600; padding: 2px 6px;
+  border-radius: 10px; margin-bottom: 2px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; cursor: default;
+}
+
+/* Automation log — empty state */
+.logEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 52px 24px;
+  text-align: center;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+}
+.logEmptyIcon {
+  width: 52px;
+  height: 52px;
+  background: var(--surface2);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.logEmptyTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.logEmptyDesc {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 340px;
+  line-height: 1.6;
+}
+
+/* Automation log */
+.logList { background: var(--white); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 16px 20px; }
+.logItem { display: flex; gap: 14px; padding-bottom: 18px; position: relative; }
+.logItem::before { content: ''; position: absolute; left: 15px; top: 28px; bottom: 0; width: 1.5px; background: var(--border-light); }
+.logItem:last-child::before { display: none; }
+.logItem:last-child { padding-bottom: 0; }
+.logDot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 1; }
+.logContent { flex: 1; }
+.logTitle { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.logDesc  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.logTime  { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: var(--font-mono); }
+
+/* ── Status badges ───────────────────────────────────────────────── */
+.statusBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.statusActive { background: #dcfce7; color: #166534; }
+.statusDraft  { background: var(--surface2); color: var(--text-muted); }
+.statusEnded  { background: #fee2e2; color: #991b1b; }
+
+/* ── Notification Stage Logic card ──────────────────────────────── */
+.stageLogicCard {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+.stageLogicTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.stageLogicGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.stageBox {
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stageBoxPre  { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
+.stageBoxDue  { background: #fefce8; border: 1px solid #fde68a; color: #92400e; }
+.stageBoxPost { background: #fdf2f8; border: 1px solid #fbcfe8; color: #9d174d; }
+.stageBoxIcon { opacity: 0.85; }
+.stageBoxLabel {
+  font-size: 12px;
+  font-weight: 700;
+}
+.stageBoxDesc {
+  font-size: 11px;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+/* ── Derived Timeline Preview ────────────────────────────────────── */
+.timelinePreviewWrap {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-top: 12px;
+  overflow-x: auto;
+}
+.timelinePreviewTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.timelineTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.timelineTable th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-light);
+}
+.timelineTable td {
+  padding: 8px 10px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+.timelineTable tr:last-child td { border-bottom: none; }
+.timelineTable tr:hover td { background: var(--surface); }
+
+.timelineDot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+.timelinePre {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.timelinePostNone {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--surface2);
+  color: var(--text-muted);
+  border-radius: 4px;
+  font-size: 11px;
+}
+.timelinePostActive {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #fdf2f8;
+  color: #9d174d;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ── Calendar Legend ─────────────────────────────────────────────── */
+.calLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.calLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.calLegendSwatch {
+  display: inline-block;
+  width: 20px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.calLegendSwatchPre {
+  background: repeating-linear-gradient(
+    135deg,
+    #1D4ED820 0px, #1D4ED820 4px,
+    transparent 4px, transparent 8px
+  );
+  border: 1px solid #bfdbfe;
+}
+.calLegendSwatchPost {
+  background: #9A341220;
+  border: 1px solid #fca5a5;
+}
+.calLegendSwatchEvent {
+  background: #1D4ED820;
+  border-left: 3px solid #1D4ED8;
+}
+
+/* ── Assign Cohort Modal ─────────────────────────────────────────── */
+.assignOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.assignModal {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.assignHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+.assignTitle { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.assignClose {
+  border: none; background: none; font-size: 20px; cursor: pointer;
+  color: var(--text-muted); line-height: 1; padding: 0 4px;
+}
+.assignClose:hover { color: var(--text-primary); }
+.assignBody { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.assignScheduleName { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+.assignLabel { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+.assignSelect {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.assignSelect:focus { border-color: var(--blue-light); }
+.assignInput {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--white);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.assignInput:focus { border-color: var(--blue-light); }
+.assignFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-light);
+}
+.assignCancel {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.assignCancel:hover { background: var(--surface); }
+.assignConfirm {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--blue-dark, #1B4F8A);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.assignConfirm:hover:not(:disabled) { opacity: 0.88; }
+.assignConfirm:disabled { opacity: 0.45; cursor: default; }
+
+/* ── Calendar focus: collapse list, expand detail ────────────────── */
+.layoutCalendar {
+  grid-template-columns: 1fr;
+}
+.schedListHidden { display: none; }
+
+/* ── Schedule context strip (client / programme / course) ───────── */
+.calContextStrip {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.calContextItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 18px;
+  border-right: 1px solid var(--border-light);
+  min-width: 0;
+}
+.calContextItem:last-child { border-right: none; }
+.calContextLabel {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.calContextValue {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Milestone selector pill bar ─────────────────────────────────── */
+.calMsBar {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.calMsBarLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  margin-top: 7px;
+}
+.calMsPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.calMsPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1.5px solid;
+  border-radius: 20px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+}
+.calMsPill:hover { transform: translateY(-1px); }
+.calMsPillActive { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.calMsPillDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.calMsPillDate {
+  font-size: 10px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  margin-left: 2px;
+}
+
+/* ── Assign mode hint banner ─────────────────────────────────────── */
+.calAssignHint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  margin-bottom: 14px;
+}
+
+/* ── Nav + legend inline row ─────────────────────────────────────── */
+.calTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* ── Assign-mode grid & day states ───────────────────────────────── */
+.calGridAssign .calDay { cursor: default; }
+.calDayAssignable {
+  cursor: crosshair !important;
+  transition: background 0.12s, outline 0.12s;
+}
+.calDayAssignable:hover {
+  outline: 2px dashed var(--blue-light);
+  outline-offset: -2px;
+  background: var(--info-bg) !important;
+}
+.calDaySelected {
+  outline: 2.5px solid var(--blue-light) !important;
+  outline-offset: -2px;
+  background: var(--info-bg) !important;
+}
+
+/* ── Reminder config drawer ──────────────────────────────────────── */
+.calDrawer {
+  margin-top: 16px;
+  border: 1.5px solid var(--blue-light);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+  animation: drawerSlideIn 0.18s ease;
+}
+@keyframes drawerSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.calDrawerHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--info-bg);
+  border-bottom: 1px solid var(--border-light);
+}
+.calDrawerDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.calDrawerTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+}
+.calDrawerClose {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.12s, color 0.12s;
+}
+.calDrawerClose:hover { background: var(--border-light); color: var(--text-primary); }
+
+.calDrawerBody { padding: 16px; }
+.calDrawerGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.calDrawerField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.calDrawerLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.calDrawerInput {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s;
+  width: 148px;
+}
+.calDrawerInput:focus { border-color: var(--blue-light); }
+.calDrawerInputNum  { width: 60px; text-align: center; }
+.calDrawerInputWide { width: 220px; }
+.calDrawerReminderRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.calDrawerUnit { font-size: 12px; color: var(--text-muted); }
+.calDrawerReminderDate {
+  font-size: 11px;
+  color: var(--blue-dark);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.calDrawerFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-light);
+  margin-top: 4px;
+}
+.calDrawerCancelBtn {
+  padding: 7px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.calDrawerCancelBtn:hover { background: var(--surface); }
+.calDrawerApplyBtn {
+  padding: 7px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--blue-dark, #1B4F8A);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.calDrawerApplyBtn:hover { opacity: 0.88; }
+
+@media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+
+@media (max-width: 768px) {
+  .calGrid { gap: 1px; }
+  .calDay  { min-height: 54px; font-size: 11px; }
+  .stageLogicGrid { grid-template-columns: 1fr; }
+}

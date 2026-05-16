@@ -1,0 +1,457 @@
+/* ── Filter panel: 6-column grid matching design reference ─────────── */
+.filterPanel {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border: 1px solid var(--border, #DDE3ED);
+  border-radius: var(--radius-md, 6px);
+  background: var(--white, #fff);
+  overflow: hidden;
+  margin-bottom: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Each column */
+.filterCol {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border, #DDE3ED);
+  min-width: 0;
+}
+.filterColLast { border-right: none; }
+
+/* Label row */
+.filterColHeader {
+  display: flex;
+  align-items: center;
+  padding: 7px 10px 6px;
+  border-bottom: 1px solid var(--border, #DDE3ED);
+  color: var(--text-primary, #1E293B);
+}
+
+.filterColTitle {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Value row */
+.filterColBody {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 0 10px 0 0;
+  color: var(--text-secondary, #475569);
+  min-width: 0;
+}
+
+/* Native select — hidden border, full width */
+.filterColSelect {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  padding: 7px 0 7px 10px;
+  font-family: var(--font);
+  font-size: 12.5px;
+  color: var(--text-secondary, #475569);
+  cursor: pointer;
+  outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filterColSelect:disabled {
+  cursor: default;
+  color: var(--text-muted);
+}
+
+/* Body row for MultiSelectDropdown columns — no extra padding (trigger handles it) */
+.filterColBodyMs {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Text input for User Name column */
+.filterColInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 7px 0 7px 10px;
+  font-family: var(--font);
+  font-size: 12.5px;
+  color: var(--text-secondary, #475569);
+  outline: none;
+}
+
+.filterColInput::placeholder { color: var(--text-muted); }
+
+/* ── KPI stats bar ─────────────────────────────────────────────────── */
+.statsBar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.statBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 11px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  min-width: 0;
+}
+
+.statBoxWide { flex: 3; }
+
+.statLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--blue-dark, #2D7DD2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+}
+
+.statValue {
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.blankVal {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.segControl { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; overflow: hidden; }
+
+.segBtn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--surface, #F8F9FB);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.segBtn:hover { border-color: var(--blue-dark, #2D7DD2); color: var(--blue-dark, #2D7DD2); }
+.segBtnActive { background: var(--blue-dark, #2D7DD2); border-color: var(--blue-dark, #2D7DD2); color: white; }
+
+/* OSL percentage threshold input */
+.oslPctWrap {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  padding: 3px 7px;
+  background: var(--surface, #F8F9FB);
+  transition: border-color 0.15s, background 0.15s;
+  cursor: text;
+}
+
+.oslPctActive {
+  border-color: var(--blue-dark, #2D7DD2);
+  background: color-mix(in srgb, var(--blue-dark, #2D7DD2) 8%, white);
+}
+
+.oslPctLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.oslPctInput {
+  width: 38px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.oslPctInput::-webkit-inner-spin-button,
+.oslPctInput::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ── Action row ────────────────────────────────────────────────────── */
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.remindAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  color: var(--text-muted);
+  font-family: var(--font);
+  cursor: not-allowed;
+  opacity: 0.5;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.remindAllActive {
+  opacity: 1;
+  cursor: pointer;
+  color: var(--blue-dark, #2D7DD2);
+  border-color: var(--blue-dark, #2D7DD2);
+}
+.remindAllActive:hover { background: var(--blue-dark, #2D7DD2); color: white; }
+
+.selectionBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--blue-dark, #2D7DD2);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+}
+.remindAllActive:hover .selectionBadge { background: white; color: var(--blue-dark, #2D7DD2); }
+
+/* ── Table ─────────────────────────────────────────────────────────── */
+.tableWrap { overflow-x: auto; border-radius: var(--radius-lg); }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
+}
+
+.table th {
+  padding: 9px 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-light);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.row:last-child td { border-bottom: none; }
+.row:hover td { background: var(--surface); cursor: pointer; }
+
+/* Selected row */
+.rowSelected td { background: color-mix(in srgb, var(--blue-dark, #2D7DD2) 6%, transparent); }
+.rowSelected:hover td { background: color-mix(in srgb, var(--blue-dark, #2D7DD2) 10%, transparent); }
+
+/* Checkbox column — with right-hand separator */
+.checkboxCell {
+  width: 44px;
+  padding: 9px 0 9px 12px !important;
+  border-right: 1.5px solid var(--border-light, #E8ECF2);
+}
+.checkbox { width: 15px; height: 15px; accent-color: var(--blue-dark, #2D7DD2); cursor: pointer; }
+
+/* Learner td — tight left padding so avatar sits close to the divider */
+.learnerTd { padding-left: 8px !important; }
+
+/* Status column heading pushed right */
+.thStatus { padding-left: 20px !important; }
+
+/* Learner cell */
+.learnerCell { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: white; flex-shrink: 0;
+}
+.learnerName { font-weight: 500; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.learnerEmail { font-size: 11px; color: var(--text-muted); }
+
+.courseCell { font-size: 12.5px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+/* Progress cells */
+.progressCell { display: flex; align-items: center; gap: 5px; }
+.progressBarWrap { width: 52px; flex-shrink: 0; }
+.progressPct { font-size: 11px; font-family: var(--font-mono); color: var(--text-secondary); flex-shrink: 0; }
+
+/* Test score */
+.testScore { font-size: 12px; font-family: var(--font-mono); font-weight: 600; }
+
+/* Project result pill */
+.projectResultTag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* Empty cell dash */
+.scoreEmpty { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+
+/* Remind button */
+.remindBtn {
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; font-size: 11px; font-weight: 500;
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--white); cursor: pointer;
+  color: var(--text-secondary); font-family: var(--font);
+  transition: all 0.15s; white-space: nowrap;
+}
+.remindBtn:hover { background: var(--blue-dark); color: white; border-color: var(--blue-dark); }
+
+.emptyRow { text-align: center; padding: 48px !important; color: var(--text-muted); }
+
+/* ── Detail Panel ───────────────────────────────────────────────────── */
+.panelSection { margin-bottom: 24px; }
+.panelSectionTitle {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;
+}
+.panelRow {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 13px;
+}
+.panelRow:last-child { border-bottom: none; }
+.panelKey { color: var(--text-muted); }
+.panelVal { font-weight: 500; color: var(--text-primary); }
+.progressItem { margin-bottom: 12px; }
+.progressLabel { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+.panelMilestones { display: flex; flex-direction: column; gap: 10px; }
+.panelMsRow { display: flex; align-items: center; gap: 10px; }
+.panelMsDot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.msDotDone    { background: var(--success); color: white; }
+.msDotActive  { background: var(--info);    color: white; }
+.msDotPending { background: var(--surface2); color: var(--text-muted); border: 1.5px solid var(--border); }
+.panelMsLabel { flex: 1; font-size: 13px; color: var(--text-primary); }
+.panelActions { display: flex; gap: 10px; padding-top: 16px; border-top: 1px solid var(--border-light); }
+
+/* ── Pagination bar ────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-light);
+  flex-wrap: wrap;
+}
+
+.pageInfo {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.pageInfo strong { color: var(--text-primary); font-weight: 600; }
+
+.pageControls {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.pageBtn {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pageBtn:hover:not(:disabled) { border-color: var(--blue-dark, #2D7DD2); color: var(--blue-dark, #2D7DD2); }
+.pageBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.pageBtnActive {
+  background: var(--blue-dark, #1B4F8A);
+  border-color: var(--blue-dark, #1B4F8A);
+  color: #fff !important;
+}
+
+.pageEllipsis {
+  min-width: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.pageSizeWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pageSizeLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.pageSizeSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--white);
+  padding: 4px 8px;
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  outline: none;
+}
