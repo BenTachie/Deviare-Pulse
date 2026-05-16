@@ -1,68 +1,102 @@
 import { useState, useEffect, useRef } from 'react'
 import Modal from '../ui/Modal'
 import { useToast } from '../context/ToastContext'
-import {
-  REMINDER_TEMPLATES,
-  getMilestoneKey,
-  substituteVars,
-  MILESTONE_LABELS,
-  TEMPLATE_VARS,
-} from '../../data/reminderTemplates'
-import { sendReminder, sendReminders } from '../../services/emailApi'
+import { getMilestoneKey, substituteVars, MILESTONE_LABELS, TEMPLATE_VARS, LMS_URL } from '../../data/reminderTemplates'
+import { sendReminder, sendReminders, fetchSgTemplates, fetchSgTemplateContent } from '../../services/emailApi'
 import styles from './Modals.module.css'
 
+const MILESTONE_ORDER = ['activation', 'osl', 'lvc', 'assessment', 'project', 'completion']
+
 /**
- * SendReminderModal — individual or bulk reminder preview.
- *
- * Props:
- *   preselectedLearner  – single learner object (Remind button on a row)
- *   preselectedLearners – array of learner objects (Remind All with selection)
+ * Remove Handlebars block helpers ({{#if ...}}...{{/if}}) from template HTML
+ * before injecting into the editor. Single sends have no block-helper context.
  */
+function stripHandlebarsBlocks(html) {
+  return html
+    .replace(/\{\{#if\s+\w+\}\}[\s\S]*?\{\{\/if\}\}/g, '')
+    .replace(/\{\{[#/][^}]+\}\}/g, '')
+    .trim()
+}
+
 export default function SendReminderModal({ onClose, preselectedLearner, preselectedLearners }) {
   const { showToast } = useToast()
 
   const isBulk         = !preselectedLearner && Array.isArray(preselectedLearners) && preselectedLearners.length > 0
   const primaryLearner = preselectedLearner ?? preselectedLearners?.[0] ?? null
 
-  const defaultKey = primaryLearner ? getMilestoneKey(primaryLearner) : REMINDER_TEMPLATES[0].key
-  const [templateKey, setTemplateKey] = useState(defaultKey)
-  const [subject, setSubject]         = useState('')
-  const [sending, setSending]         = useState(false)
-  const [sent, setSent]               = useState(false)
-  const [apiError, setApiError]       = useState(null)
+  const [templates,     setTemplates]     = useState([])          // [{id, name, milestoneKey}]
+  const [templateKey,   setTemplateKey]   = useState(null)        // selected milestone key
+  const [subject,       setSubject]       = useState('')
+  const [loadingTpl,    setLoadingTpl]    = useState(true)
+  const [sending,       setSending]       = useState(false)
+  const [sent,          setSent]          = useState(false)
+  const [apiError,      setApiError]      = useState(null)
 
   const msgRef = useRef(null)
 
-  /* ── Apply template content whenever key changes ── */
+  /* ── Load template list from SendGrid on mount ── */
   useEffect(() => {
-    const tpl           = REMINDER_TEMPLATES.find((t) => t.key === templateKey) ?? REMINDER_TEMPLATES[0]
-    const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
-    const subst          = !isBulk && primaryLearner
-      ? (str) => substituteVars(str, primaryLearner, milestoneLabel)
-      : (str) => str
+    fetchSgTemplates()
+      .then((tpls) => {
+        const sorted = [...tpls].sort((a, b) =>
+          MILESTONE_ORDER.indexOf(a.milestoneKey) - MILESTONE_ORDER.indexOf(b.milestoneKey)
+        )
+        setTemplates(sorted)
+        const defaultKey = primaryLearner
+          ? getMilestoneKey(primaryLearner)
+          : (sorted[0]?.milestoneKey ?? 'activation')
+        setTemplateKey(defaultKey)
+      })
+      .catch(() => setLoadingTpl(false))
+  }, []) // eslint-disable-line
 
-    setSubject(subst(tpl.subject))
-    if (msgRef.current) msgRef.current.innerHTML = subst(tpl.body)
+  /* ── Fetch and populate editor when templateKey changes ── */
+  useEffect(() => {
+    if (!templateKey || templates.length === 0) return
+
+    const tpl = templates.find((t) => t.milestoneKey === templateKey)
+    if (!tpl) return
+
+    setLoadingTpl(true)
     setApiError(null)
-  }, [templateKey]) // primaryLearner and isBulk are stable over modal lifetime
+
+    fetchSgTemplateContent(tpl.id)
+      .then((content) => {
+        const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
+        const subst = !isBulk && primaryLearner
+          ? (str) => substituteVars(str, primaryLearner, milestoneLabel)
+          : (str) => str
+
+        setSubject(subst(content.subject))
+        if (msgRef.current) msgRef.current.innerHTML = subst(stripHandlebarsBlocks(content.htmlContent))
+      })
+      .catch((err) => setApiError(`Could not load template: ${err.message}`))
+      .finally(() => setLoadingTpl(false))
+  }, [templateKey, templates]) // eslint-disable-line
 
   /* ── Formatting commands ── */
   const execCmd = (cmd) => { msgRef.current?.focus(); document.execCommand(cmd, false) }
 
   const handleReset = () => {
-    const tpl           = REMINDER_TEMPLATES.find((t) => t.key === templateKey) ?? REMINDER_TEMPLATES[0]
-    const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
-    const subst          = !isBulk && primaryLearner
-      ? (str) => substituteVars(str, primaryLearner, milestoneLabel)
-      : (str) => str
-    setSubject(subst(tpl.subject))
-    if (msgRef.current) msgRef.current.innerHTML = subst(tpl.body)
-    setApiError(null)
+    const tpl = templates.find((t) => t.milestoneKey === templateKey)
+    if (!tpl) return
+    setLoadingTpl(true)
+    fetchSgTemplateContent(tpl.id)
+      .then((content) => {
+        const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
+        const subst = !isBulk && primaryLearner
+          ? (str) => substituteVars(str, primaryLearner, milestoneLabel)
+          : (str) => str
+        setSubject(subst(content.subject))
+        if (msgRef.current) msgRef.current.innerHTML = subst(stripHandlebarsBlocks(content.htmlContent))
+        setApiError(null)
+      })
+      .finally(() => setLoadingTpl(false))
   }
 
   /* ── Send ── */
   const handleSend = async () => {
-    if (sending || sent) return
+    if (sending || sent || loadingTpl) return
     setApiError(null)
     setSending(true)
 
@@ -70,26 +104,24 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
 
     try {
       if (isBulk) {
+        const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
         const recipients = preselectedLearners
           .filter((l) => l.email)
-          .map((l) => {
-            const milestoneLabel = MILESTONE_LABELS[templateKey] ?? ''
-            return {
-              email: l.email,
-              name:  l.name,
-              variables: {
-                LearnerName:     l.name?.split(' ')[0] || l.name || '',
-                CourseName:      l.course || '',
-                MilestoneName:   milestoneLabel,
-                CurrentProgress: templateKey === 'lvc'
-                  ? `${Math.round(l.lvcProgress ?? 0)}%`
-                  : `${Math.round(l.oslProgress ?? 0)}%`,
-                RequiredTarget:  templateKey === 'lvc' ? '80%' : '85%',
-                DueDate:         l.completionDate || 'your programme deadline',
-                DaysRemaining:   '7',
-              },
-            }
-          })
+          .map((l) => ({
+            email: l.email,
+            name:  l.name,
+            variables: {
+              LearnerName:     l.name?.split(' ')[0] || l.name || '',
+              CourseName:      l.course || '',
+              MilestoneName:   milestoneLabel,
+              CurrentProgress: templateKey === 'lvc'
+                ? `${Math.round(l.lvcProgress ?? 0)}%`
+                : `${Math.round(l.oslProgress ?? 0)}%`,
+              RequiredTarget:  templateKey === 'lvc' ? '80%' : '85%',
+              DueDate:         l.completionDate || 'your programme deadline',
+              DaysRemaining:   '7',
+            },
+          }))
 
         const result = await sendReminders({ recipients, templateKey, subject, bodyHtml })
         setSent(true)
@@ -118,6 +150,7 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
             RequiredTarget:  templateKey === 'lvc' ? '80%' : '85%',
             DueDate:         primaryLearner.completionDate || 'your programme deadline',
             DaysRemaining:   '7',
+            LMSLoginUrl:     LMS_URL,
           },
         })
         setSent(true)
@@ -144,6 +177,8 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
     ? 'Sent!'
     : sending
     ? 'Sending…'
+    : loadingTpl
+    ? 'Loading…'
     : isBulk
     ? `Send to ${preselectedLearners.length} Learners`
     : 'Send Reminder'
@@ -160,16 +195,16 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
           <button
             className={styles.sendBtn}
             onClick={handleSend}
-            disabled={sending || sent}
+            disabled={sending || sent || loadingTpl}
           >
-            {!sending && (
+            {!sending && !loadingTpl && (
               <svg width="13" height="13" viewBox="0 0 20 20" fill="none">
                 <path d="M17.5 2.5L2.5 9.17l5.83 2.5 2.5 5.83 6.67-15Z"
                   stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
                 <path d="M8.33 11.67L17.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             )}
-            {sending && <span className={styles.sendingSpinner} />}
+            {(sending || loadingTpl) && <span className={styles.sendingSpinner} />}
             {sendLabel}
           </button>
         </div>
@@ -177,7 +212,7 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
     >
       <div className={styles.reminderForm}>
 
-        {/* ── Error banner ── */}
+        {/* Error banner */}
         {apiError && (
           <div className={styles.errorBanner}>
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
@@ -188,45 +223,44 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
           </div>
         )}
 
-        {/* ── Recipient info card ── */}
+        {/* Recipient info card */}
         <div className={styles.infoCard}>
           <div className={styles.infoCol}>
             <div className={styles.infoLabel}>Recipient</div>
             <div className={styles.infoName}>{recipientName}</div>
             {recipientEmail && <div className={styles.infoEmail}>{recipientEmail}</div>}
           </div>
-
           <div className={styles.infoDivider} />
-
           <div className={styles.infoCol}>
             <div className={styles.infoLabel}>Course</div>
             <div className={styles.infoValue}>{courseName}</div>
           </div>
-
           <div className={styles.infoDivider} />
-
           <div className={styles.infoCol}>
             <div className={styles.infoLabel}>Milestone</div>
             <div className={styles.infoValue}>{milestoneLabel}</div>
           </div>
         </div>
 
-        {/* ── Template selector ── */}
+        {/* Template selector — built from live SendGrid list */}
         <div className={styles.field}>
           <label className={styles.fieldLabel}>Template</label>
           <select
             className={styles.fieldSelect}
-            value={templateKey}
+            value={templateKey ?? ''}
             onChange={(e) => setTemplateKey(e.target.value)}
-            disabled={sending}
+            disabled={sending || templates.length === 0}
           >
-            {REMINDER_TEMPLATES.map((t) => (
-              <option key={t.key} value={t.key}>{t.name}</option>
+            {templates.length === 0 && (
+              <option value="">Loading templates…</option>
+            )}
+            {templates.map((t) => (
+              <option key={t.milestoneKey} value={t.milestoneKey}>{t.name}</option>
             ))}
           </select>
         </div>
 
-        {/* ── Subject ── */}
+        {/* Subject */}
         <div className={styles.field}>
           <label className={styles.fieldLabel}>Subject</label>
           <input
@@ -238,7 +272,7 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
           />
         </div>
 
-        {/* ── Message body ── */}
+        {/* Message body */}
         <div className={styles.field}>
           <div className={styles.msgHeader}>
             <label className={styles.fieldLabel}>Message</label>
@@ -247,41 +281,35 @@ export default function SendReminderModal({ onClose, preselectedLearner, presele
                 type="button"
                 className={styles.msgToolBtn}
                 onMouseDown={(e) => { e.preventDefault(); execCmd('bold') }}
-                disabled={sending}
-              >
-                <strong>B</strong>
-              </button>
+                disabled={sending || loadingTpl}
+              ><strong>B</strong></button>
               <button
                 type="button"
                 className={styles.msgToolBtn}
                 onMouseDown={(e) => { e.preventDefault(); execCmd('italic') }}
-                disabled={sending}
-              >
-                <em>I</em>
-              </button>
+                disabled={sending || loadingTpl}
+              ><em>I</em></button>
               <button
                 type="button"
                 className={styles.msgToolBtnReset}
                 onMouseDown={(e) => { e.preventDefault(); handleReset() }}
-                disabled={sending}
-              >
-                Reset
-              </button>
+                disabled={sending || loadingTpl}
+              >Reset</button>
             </div>
           </div>
           <div
             ref={msgRef}
-            className={`${styles.msgBody} ${sending ? styles.msgBodyDisabled : ''}`}
-            contentEditable={!sending}
+            className={`${styles.msgBody} ${(sending || loadingTpl) ? styles.msgBodyDisabled : ''}`}
+            contentEditable={!sending && !loadingTpl}
             suppressContentEditableWarning
           />
         </div>
 
-        {/* ── Variable chips — shown in bulk mode ── */}
+        {/* Variable chips in bulk mode */}
         {isBulk && (
           <div className={styles.variables}>
             <div className={styles.variablesLabel}>
-              Placeholders are auto-personalized per learner on dispatch:
+              Placeholders are auto-personalised per learner on dispatch:
             </div>
             <div className={styles.variableChips}>
               {TEMPLATE_VARS.map((v) => (

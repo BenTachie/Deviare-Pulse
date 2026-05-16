@@ -1,6 +1,7 @@
 const db              = require('../models/db')
 const { listTemplates, getTemplateByKey } = require('../services/templateService')
 const { sendEmail, sendBulkEmails }       = require('../services/emailService')
+const sgApi                               = require('../services/sendgridApiService')
 
 /* ── GET /api/email/templates ─────────────────────────────────────── */
 function getTemplates(_req, res) {
@@ -66,4 +67,41 @@ function getLogs(_req, res) {
   }
 }
 
-module.exports = { getTemplates, getTemplate, sendReminder, sendReminders, getLogs }
+/* ── GET /api/email/sg-templates ──────────────────────────────────── */
+async function getSgTemplates(_req, res) {
+  try {
+    const templates = await sgApi.listTemplates()
+    res.json({ templates })
+  } catch (err) {
+    console.error('[getSgTemplates]', err)
+    res.status(err.status || 500).json({ error: err.message })
+  }
+}
+
+/* ── GET /api/email/sg-templates/:templateId/content ─────────────── */
+async function getSgTemplateContent(req, res) {
+  try {
+    const content = await sgApi.getTemplateContent(req.params.templateId)
+    res.json(content)
+  } catch (err) {
+    console.error('[getSgTemplateContent]', err)
+    res.status(err.status || 500).json({ error: err.message })
+  }
+}
+
+/* ── PATCH /api/email/sg-templates/:templateId ───────────────────── */
+async function updateSgTemplate(req, res) {
+  const { subject, htmlContent } = req.body
+  if (!subject && !htmlContent) {
+    return res.status(422).json({ error: 'subject or htmlContent is required' })
+  }
+  try {
+    await sgApi.updateTemplate(req.params.templateId, { subject, htmlContent })
+    res.json({ success: true })
+  } catch (err) {
+    console.error('[updateSgTemplate]', err)
+    res.status(err.status || 500).json({ error: err.message })
+  }
+}
+
+module.exports = { getTemplates, getTemplate, sendReminder, sendReminders, getLogs, getSgTemplates, getSgTemplateContent, updateSgTemplate }

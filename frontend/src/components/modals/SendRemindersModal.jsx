@@ -4,12 +4,7 @@ import { useToast } from '../context/ToastContext'
 import { useApp } from '../../context/AppContext'
 import { MultiSelectDropdown } from '../ui/MultiSelectDropdown'
 import { sendReminders } from '../../services/emailApi'
-import {
-  REMINDER_TEMPLATES,
-  getMilestoneKey,
-  substituteVars,
-  MILESTONE_LABELS,
-} from '../../data/reminderTemplates'
+import { MILESTONE_LABELS } from '../../data/reminderTemplates'
 import styles from './Modals.module.css'
 
 const MILESTONE_OPTIONS = [
@@ -189,7 +184,6 @@ export default function SendRemindersModal({ onClose }) {
 
     try {
       for (const msKey of selectedMsKeys) {
-        const tpl = REMINDER_TEMPLATES.find((t) => t.key === msKey) ?? REMINDER_TEMPLATES[0]
         const recipients = buildRecipientsForMilestone(
           learners, clients, programs, courses, audience, msKey
         )
@@ -198,8 +192,6 @@ export default function SendRemindersModal({ onClose }) {
         const result = await sendReminders({
           recipients,
           templateKey:    msKey,
-          subject:        tpl.subject,
-          bodyHtml:       tpl.body,
           additionalNote: additionalNote.trim() || undefined,
         })
         totalSent   += result.sent   ?? 0

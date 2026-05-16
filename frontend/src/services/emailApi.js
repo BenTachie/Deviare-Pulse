@@ -59,3 +59,22 @@ export async function fetchLogs() {
   const { logs } = await request('/logs')
   return logs
 }
+
+/** Fetch all mapped SendGrid dynamic templates (name, milestoneKey, colour) */
+export async function fetchSgTemplates() {
+  const { templates } = await request('/sg-templates')
+  return templates
+}
+
+/** Fetch full content (subject + htmlContent) for one SendGrid template */
+export async function fetchSgTemplateContent(templateId) {
+  return request(`/sg-templates/${templateId}/content`)
+}
+
+/** Save subject and/or HTML back to SendGrid */
+export async function saveSgTemplate(templateId, { subject, htmlContent }) {
+  return request(`/sg-templates/${templateId}`, {
+    method: 'PATCH',
+    body:   JSON.stringify({ subject, htmlContent }),
+  })
+}

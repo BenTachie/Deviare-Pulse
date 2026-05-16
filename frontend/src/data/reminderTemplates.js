@@ -117,17 +117,20 @@ export function getMilestoneKey(learner) {
   return 'activation'
 }
 
+export const LMS_URL = 'https://platform.deviare.africa'
+
 /** Replace {{placeholders}} with real learner data */
 export function substituteVars(str, learner, milestoneLabel = '') {
   const firstName = learner.name?.split(' ')[0] || learner.name || ''
   const map = {
-    '{{LearnerName}}':    firstName,
-    '{{CourseName}}':     learner.course || '',
-    '{{MilestoneName}}':  milestoneLabel,
+    '{{LearnerName}}':     firstName,
+    '{{CourseName}}':      learner.course || '',
+    '{{MilestoneName}}':   milestoneLabel,
     '{{CurrentProgress}}': `${Math.round(learner.oslProgress ?? 0)}%`,
-    '{{RequiredTarget}}': '85%',
-    '{{DueDate}}':        learner.completionDate || 'your programme deadline',
-    '{{DaysRemaining}}':  '7',
+    '{{RequiredTarget}}':  '85%',
+    '{{DueDate}}':         learner.completionDate || 'your programme deadline',
+    '{{DaysRemaining}}':   '7',
+    '{{LMSLoginUrl}}':     LMS_URL,
   }
   let result = str
   for (const [k, v] of Object.entries(map)) {

@@ -22,4 +22,9 @@ router.post('/send-reminders', sendLimiter, sendBulkRules,     validate, ctrl.se
 
 router.get('/logs', ctrl.getLogs)
 
+/* ── SendGrid template management (proxied) ─────────────────────── */
+router.get('/sg-templates',                   ctrl.getSgTemplates)
+router.get('/sg-templates/:templateId/content', ctrl.getSgTemplateContent)
+router.patch('/sg-templates/:templateId',     ctrl.updateSgTemplate)
+
 module.exports = router

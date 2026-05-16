@@ -13,9 +13,10 @@ const sendReminderRules = [
 const sendBulkRules = [
   body('recipients').isArray({ min: 1 }).withMessage('recipients must be a non-empty array'),
   body('recipients.*.email').isEmail().withMessage('each recipient must have a valid email'),
-  body('templateKey').optional().isString(),
-  body('subject').notEmpty().withMessage('subject is required'),
-  body('bodyHtml').notEmpty().withMessage('bodyHtml is required'),
+  body('templateKey').notEmpty().withMessage('templateKey is required'),
+  // subject and bodyHtml are optional — backend uses the SendGrid template when a templateId is configured
+  body('subject').optional().isString(),
+  body('bodyHtml').optional().isString(),
   body('additionalNote').optional().isString(),
 ]
 

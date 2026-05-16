@@ -1,11 +1,15 @@
 const db = require('../models/db')
+const { getTemplateId } = require('../config/sendgridTemplates')
 
 const stmtAll = db.prepare('SELECT key, name, subject FROM email_templates ORDER BY rowid')
 const stmtOne = db.prepare('SELECT * FROM email_templates WHERE key = ?')
 
-/** Return lightweight list for dropdown */
+/** Return lightweight list for dropdown, enriched with SendGrid template ID status */
 function listTemplates() {
-  return stmtAll.all()
+  return stmtAll.all().map((row) => ({
+    ...row,
+    sendgridTemplateId: getTemplateId(row.key),
+  }))
 }
 
 /** Return full template or null */
@@ -35,8 +39,8 @@ function buildEmail(templateKey, { subject, bodyHtml, variables = {} }) {
   const finalSubject = subject?.trim()
     || (tpl ? renderTemplate(tpl.subject, variables) : '(No subject)')
 
-  const finalBody = bodyHtml?.trim()
-    || (tpl ? renderTemplate(tpl.body_html, variables) : '')
+  const rawBody  = bodyHtml?.trim() || (tpl ? tpl.body_html : '')
+  const finalBody = renderTemplate(rawBody, variables)
 
   return { subject: finalSubject, bodyHtml: finalBody }
 }
